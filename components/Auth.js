@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 
-/* ══════════ PALETTE (ARCTIC STEALTH) ══════════════════════════════════════ */
+/* ══════════ PALETTE ══════════════════════════════════════ */
 const C = {
   bg: "#050b14", surface: "#0b1221", border: "#1a2436", borderHi: "#2a3b59",
-  accent: "#00f0ff", accentDim: "#008c99", accentGlow: "rgba(0, 240, 255, 0.12)",
+  accent: "#00f0ff", accentDim: "#008c99", accentGlow: "rgba(0, 240, 255, 0.04)",
   text: "#f8fafc", muted: "#64748b", faint: "#0f172a",
   danger: "#fb7185", green: "#10b981",
 };
@@ -42,9 +42,9 @@ export default function Auth() {
   };
 
   return (
-    <div style={{ background: C.bg, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 24px", fontFamily: "'Barlow Condensed', sans-serif", color: C.text }}>
+    <div style={{ background: C.bg, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 24px", fontFamily: "'Outfit', sans-serif", color: C.text }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: ${C.bg} !important; -webkit-font-smoothing: antialiased; }
         
@@ -116,7 +116,7 @@ export default function Auth() {
               width: "100%", padding: "16px",
               background: loading ? C.accentDim : C.accent,
               border: "none", borderRadius: 12,
-              color: C.bg, fontFamily: "'Barlow Condensed', sans-serif",
+              color: C.bg, fontFamily: "'Outfit', sans-serif",
               fontSize: 18, fontWeight: 700, letterSpacing: 3,
               cursor: loading ? "default" : "pointer",
               transition: "all .3s cubic-bezier(0.4, 0, 0.2, 1)", marginTop: 8,
