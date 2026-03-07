@@ -9,7 +9,7 @@ import Auth from "./Auth";
 /* ══════════ PALETTE (ARCTIC STEALTH) ══════════════════════════════════════ */
 const C = {
   bg: "#050b14", surface: "#0b1221", border: "#1a2436", borderHi: "#2a3b59",
-  accent: "#00f0ff", accentDim: "#008c99", accentGlow: "rgba(0, 240, 255, 0.12)",
+  accent: "#00f0ff", accentDim: "#008c99", accentGlow: "rgba(0, 240, 255, 0.04)",
   text: "#f8fafc", muted: "#64748b", faint: "#0f172a",
   danger: "#fb7185", green: "#10b981",
 };
@@ -68,7 +68,7 @@ function calcMuscleProgress(totals){
 function SectionLabel({ children, action }){
   return (
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-      <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,letterSpacing:3,color:C.muted,textTransform:"uppercase"}}>{children}</div>
+      <div style={{fontFamily:"'Outfit', sans-serif",fontSize:12,letterSpacing:3,color:C.muted,textTransform:"uppercase"}}>{children}</div>
       {action}
     </div>
   );
@@ -114,7 +114,7 @@ function CalendarModal({ habitId, habitLabel, onClose }){
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(5,11,20,0.95)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:400,padding:"0 16px",animation:"fadeIn .2s ease"}}>
       <div onClick={e=>e.stopPropagation()} style={{background:C.surface,border:`1px solid ${C.borderHi}`,boxShadow:"0 20px 40px rgba(0,0,0,0.5)",borderRadius:16,padding:"20px 16px",width:"100%",maxWidth:340,animation:"popIn .25s cubic-bezier(0.175, 0.885, 0.32, 1.275)"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,fontWeight:600,letterSpacing:1,color:C.text}}>{habitLabel}</div>
+          <div style={{fontFamily:"'Outfit', sans-serif",fontSize:20,fontWeight:600,letterSpacing:1,color:C.text}}>{habitLabel}</div>
           <button onClick={onClose} className="btn-press" style={{background:"transparent",border:"none",color:C.muted,fontSize:26,lineHeight:1,cursor:"pointer",padding:"0 4px"}}>×</button>
         </div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
@@ -207,7 +207,7 @@ function ExerciseCard({ exercise, accentColor, onAddSet, onRemoveSet, onRemove }
     <Card className="hover-lift" style={{marginBottom:12, borderColor:C.borderHi}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:exercise.sets.length>0?12:0}}>
         <div>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,fontWeight:600,letterSpacing:0.5}}>{exercise.name}</div>
+          <div style={{fontFamily:"'Outfit', sans-serif",fontSize:18,fontWeight:600,letterSpacing:0.5}}>{exercise.name}</div>
           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:accentColor,marginTop:2}}>{exercise.sets.length} SET{exercise.sets.length!==1?"S":""}</div>
         </div>
         <button onClick={onRemove} style={{background:"transparent",border:"none",color:C.muted,fontSize:22,cursor:"pointer",padding:"0 4px",lineHeight:1,transition:"color .2s"}} onMouseEnter={e=>e.target.style.color=C.danger} onMouseLeave={e=>e.target.style.color=C.muted}>×</button>
@@ -231,11 +231,11 @@ function ExerciseCard({ exercise, accentColor, onAddSet, onRemoveSet, onRemove }
         <div style={{display:"flex",gap:8,alignItems:"center",marginTop:exercise.sets.length>0?0:12}}>
           <input value={reps} onChange={e=>setReps(e.target.value)} placeholder="Reps" type="number" style={{width:60,padding:"10px",background:C.faint,border:`1px solid ${C.borderHi}`,borderRadius:8,color:C.text,fontFamily:"'JetBrains Mono',monospace",fontSize:14,outline:"none",textAlign:"center",transition:"border-color .2s"}} onFocus={e=>e.target.style.borderColor=accentColor} onBlur={e=>e.target.style.borderColor=C.borderHi}/>
           <input value={weight} onChange={e=>setWeight(e.target.value)} placeholder="kg" type="number" style={{width:60,padding:"10px",background:C.faint,border:`1px solid ${C.borderHi}`,borderRadius:8,color:C.text,fontFamily:"'JetBrains Mono',monospace",fontSize:14,outline:"none",textAlign:"center",transition:"border-color .2s"}} onFocus={e=>e.target.style.borderColor=accentColor} onBlur={e=>e.target.style.borderColor=C.borderHi}/>
-          <button onClick={()=>{onAddSet(Number(reps)||0,Number(weight)||0);setAdding(false);}} className="btn-press" style={{flex:1,background:accentColor,border:"none",borderRadius:8,padding:"10px 0",color:C.bg,fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:1,boxShadow:`0 4px 12px ${accentColor}44`}}>LOG</button>
-          <button onClick={()=>setAdding(false)} className="btn-press" style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",color:C.muted,fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,cursor:"pointer"}}>✕</button>
+          <button onClick={()=>{onAddSet(Number(reps)||0,Number(weight)||0);setAdding(false);}} className="btn-press" style={{flex:1,background:accentColor,border:"none",borderRadius:8,padding:"10px 0",color:C.bg,fontFamily:"'Outfit', sans-serif",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:1,boxShadow:`0 4px 12px ${accentColor}44`}}>LOG</button>
+          <button onClick={()=>setAdding(false)} className="btn-press" style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",color:C.muted,fontFamily:"'Outfit', sans-serif",fontSize:15,cursor:"pointer"}}>✕</button>
         </div>
       ):(
-        <button onClick={()=>setAdding(true)} className="btn-press" style={{width:"100%",marginTop:exercise.sets.length>0?0:10,padding:"10px",background:C.faint,border:`1px dashed ${C.borderHi}`,borderRadius:8,cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,letterSpacing:1,color:C.muted,transition:"all .2s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor=accentColor;e.currentTarget.style.color=accentColor;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.borderHi;e.currentTarget.style.color=C.muted;}}>
+        <button onClick={()=>setAdding(true)} className="btn-press" style={{width:"100%",marginTop:exercise.sets.length>0?0:10,padding:"10px",background:C.faint,border:`1px dashed ${C.borderHi}`,borderRadius:8,cursor:"pointer",fontFamily:"'Outfit', sans-serif",fontSize:14,letterSpacing:1,color:C.muted,transition:"all .2s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor=accentColor;e.currentTarget.style.color=accentColor;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.borderHi;e.currentTarget.style.color=C.muted;}}>
           + ADD SET
         </button>
       )}
@@ -296,7 +296,7 @@ function GymPage(){
         <SectionLabel action={
           <div style={{display:"flex",gap:6, background:C.surface, padding:4, borderRadius:8, border:`1px solid ${C.border}`}}>
             {["front","back"].map(v=>(
-              <button key={v} onClick={()=>setBodyView(v)} className="btn-press" style={{background:bodyView===v?C.borderHi:"transparent",borderRadius:6,padding:"6px 12px",color:bodyView===v?C.text:C.muted,fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,fontWeight:600,letterSpacing:1,cursor:"pointer",transition:"all .2s",border:"none"}}>
+              <button key={v} onClick={()=>setBodyView(v)} className="btn-press" style={{background:bodyView===v?C.borderHi:"transparent",borderRadius:6,padding:"6px 12px",color:bodyView===v?C.text:C.muted,fontFamily:"'Outfit', sans-serif",fontSize:12,fontWeight:600,letterSpacing:1,cursor:"pointer",transition:"all .2s",border:"none"}}>
                 {v.toUpperCase()}
               </button>
             ))}
@@ -311,7 +311,7 @@ function GymPage(){
                 return (
                   <div key={m} style={{marginBottom:12}}>
                     <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-                      <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,letterSpacing:0.5,textTransform:"capitalize"}}>{m}</span>
+                      <span style={{fontFamily:"'Outfit', sans-serif",fontSize:14,letterSpacing:0.5,textTransform:"capitalize"}}>{m}</span>
                       <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:pct>0?C.accent:C.muted}}>{muscleTotals[m]||0} sets</span>
                     </div>
                     <div style={{background:C.border,borderRadius:4,height:6,overflow:"hidden",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.5)"}}>
@@ -329,8 +329,8 @@ function GymPage(){
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           {PPL_DAYS.map(day=>(
             <button key={day.id} onClick={()=>selectDay(day.id)} className="hover-lift btn-press" style={{background:selectedDay===day.id?`${day.color}15`:C.surface,border:`1px solid ${selectedDay===day.id?day.color:C.border}`,boxShadow:selectedDay===day.id?`0 4px 16px ${day.color}22`:"none",borderRadius:12,padding:"14px 16px",textAlign:"left",cursor:"pointer",transition:"all .2s ease"}}>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:700,letterSpacing:1.5,color:selectedDay===day.id?day.color:C.muted,marginBottom:4}}>DAY {day.day}</div>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:17,fontWeight:600,letterSpacing:0.5,color:selectedDay===day.id?C.text:C.muted}}>{day.short}</div>
+              <div style={{fontFamily:"'Outfit', sans-serif",fontSize:13,fontWeight:700,letterSpacing:1.5,color:selectedDay===day.id?day.color:C.muted,marginBottom:4}}>DAY {day.day}</div>
+              <div style={{fontFamily:"'Outfit', sans-serif",fontSize:17,fontWeight:600,letterSpacing:0.5,color:selectedDay===day.id?C.text:C.muted}}>{day.short}</div>
             </button>
           ))}
         </div>
@@ -338,7 +338,7 @@ function GymPage(){
       {selectedDay&&workout&&curDef&&(
         <div style={{animation:"slideIn .4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,paddingBottom:12,borderBottom:`1px solid ${C.border}`}}>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:24,fontWeight:700,color:curDef.color,letterSpacing:1,textShadow:`0 0 16px ${curDef.color}66`}}>{curDef.label.toUpperCase()}</div>
+            <div style={{fontFamily:"'Outfit', sans-serif",fontSize:24,fontWeight:700,color:curDef.color,letterSpacing:1,textShadow:`0 0 16px ${curDef.color}66`}}>{curDef.label.toUpperCase()}</div>
             <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:C.text,background:C.borderHi,padding:"4px 8px",borderRadius:6,letterSpacing:1}}>{workout.exercises.reduce((n,e)=>n+e.sets.length,0)} SETS</div>
           </div>
           {workout.exercises.map(ex=>(
@@ -349,17 +349,17 @@ function GymPage(){
               <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:C.muted,letterSpacing:1.5,marginBottom:12}}>RECOMMENDED MODULES</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:16}}>
                 {curDef.suggestions.filter(s=>!workout.exercises.find(e=>e.name===s)).map(s=>(
-                  <button key={s} onClick={()=>addExercise(s,curDef.muscles)} className="btn-press" style={{background:C.faint,border:`1px solid ${C.borderHi}`,borderRadius:8,padding:"8px 12px",fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:C.text,cursor:"pointer",transition:"all .2s"}} onMouseEnter={e=>{e.target.style.borderColor=curDef.color;e.target.style.color=curDef.color;e.target.style.boxShadow=`0 0 10px ${curDef.color}33`;}} onMouseLeave={e=>{e.target.style.borderColor=C.borderHi;e.target.style.color=C.text;e.target.style.boxShadow="none";}}>{s}</button>
+                  <button key={s} onClick={()=>addExercise(s,curDef.muscles)} className="btn-press" style={{background:C.faint,border:`1px solid ${C.borderHi}`,borderRadius:8,padding:"8px 12px",fontFamily:"'Outfit', sans-serif",fontSize:14,color:C.text,cursor:"pointer",transition:"all .2s"}} onMouseEnter={e=>{e.target.style.borderColor=curDef.color;e.target.style.color=curDef.color;e.target.style.boxShadow=`0 0 10px ${curDef.color}33`;}} onMouseLeave={e=>{e.target.style.borderColor=C.borderHi;e.target.style.color=C.text;e.target.style.boxShadow="none";}}>{s}</button>
                 ))}
               </div>
               <div style={{display:"flex",gap:8}}>
-                <input ref={exInputRef} value={customExName} onChange={e=>setCustomExName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&customExName.trim())addExercise(customExName.trim(),curDef.muscles);}} placeholder="Custom exercise..." style={{flex:1,padding:"12px 14px",background:C.bg,border:`1px solid ${C.borderHi}`,borderRadius:8,color:C.text,fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,outline:"none",transition:"border-color .2s"}} onFocus={e=>e.target.style.borderColor=curDef.color} onBlur={e=>e.target.style.borderColor=C.borderHi}/>
-                <button onClick={()=>{if(customExName.trim())addExercise(customExName.trim(),curDef.muscles);}} className="btn-press" style={{background:curDef.color,border:"none",borderRadius:8,padding:"0 20px",color:C.bg,fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:1}}>ADD</button>
-                <button onClick={()=>{setShowAddEx(false);setCustomExName("");}} className="btn-press" style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,padding:"0 16px",color:C.muted,fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,cursor:"pointer"}}>✕</button>
+                <input ref={exInputRef} value={customExName} onChange={e=>setCustomExName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&customExName.trim())addExercise(customExName.trim(),curDef.muscles);}} placeholder="Custom exercise..." style={{flex:1,padding:"12px 14px",background:C.bg,border:`1px solid ${C.borderHi}`,borderRadius:8,color:C.text,fontFamily:"'Outfit', sans-serif",fontSize:15,outline:"none",transition:"border-color .2s"}} onFocus={e=>e.target.style.borderColor=curDef.color} onBlur={e=>e.target.style.borderColor=C.borderHi}/>
+                <button onClick={()=>{if(customExName.trim())addExercise(customExName.trim(),curDef.muscles);}} className="btn-press" style={{background:curDef.color,border:"none",borderRadius:8,padding:"0 20px",color:C.bg,fontFamily:"'Outfit', sans-serif",fontSize:15,fontWeight:700,cursor:"pointer",letterSpacing:1}}>ADD</button>
+                <button onClick={()=>{setShowAddEx(false);setCustomExName("");}} className="btn-press" style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,padding:"0 16px",color:C.muted,fontFamily:"'Outfit', sans-serif",fontSize:15,cursor:"pointer"}}>✕</button>
               </div>
             </Card>
           ):(
-            <button onClick={()=>{setShowAddEx(true);setTimeout(()=>exInputRef.current?.focus(),50);}} className="btn-press hover-lift" style={{width:"100%",padding:"14px",background:C.surface,border:`1px dashed ${C.borderHi}`,borderRadius:12,cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,fontWeight:600,letterSpacing:1.5,color:C.text,transition:"all .2s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor=curDef.color;e.currentTarget.style.color=curDef.color;e.currentTarget.style.background=`${curDef.color}11`;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.borderHi;e.currentTarget.style.color=C.text;e.currentTarget.style.background=C.surface;}}>
+            <button onClick={()=>{setShowAddEx(true);setTimeout(()=>exInputRef.current?.focus(),50);}} className="btn-press hover-lift" style={{width:"100%",padding:"14px",background:C.surface,border:`1px dashed ${C.borderHi}`,borderRadius:12,cursor:"pointer",fontFamily:"'Outfit', sans-serif",fontSize:15,fontWeight:600,letterSpacing:1.5,color:C.text,transition:"all .2s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor=curDef.color;e.currentTarget.style.color=curDef.color;e.currentTarget.style.background=`${curDef.color}11`;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.borderHi;e.currentTarget.style.color=C.text;e.currentTarget.style.background=C.surface;}}>
               + INITIALIZE NEW EXERCISE
             </button>
           )}
@@ -378,7 +378,7 @@ function HabitRow({ label, cat, done, onToggle, onCalendar, onRemove, index }){
           <svg width="12" height="10" viewBox="0 0 12 10" fill="none" style={{opacity:done?1:0, transform:done?"scale(1)":"scale(0.5)", transition:"all .3s cubic-bezier(0.175, 0.885, 0.32, 1.275)"}}><path d="M1 5L4.5 8.5L11 1" stroke={C.bg} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
         </div>
         <div style={{minWidth:0}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,fontWeight:500,letterSpacing:0.5,color:done?C.accent:C.text,textShadow:done?`0 0 8px ${C.accentGlow}`:"none",transition:"color .3s"}}>{label}</div>
+          <div style={{fontFamily:"'Outfit', sans-serif",fontSize:18,fontWeight:500,letterSpacing:0.5,color:done?C.accent:C.text,textShadow:done?`0 0 8px ${C.accentGlow}`:"none",transition:"color .3s"}}>{label}</div>
           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:C.muted,marginTop:3,letterSpacing:1.5}}>{cat}</div>
         </div>
       </div>
@@ -479,7 +479,7 @@ function HabitsPage(){
         <div onClick={()=>setShowComplete(false)} style={{position:"fixed",inset:0,background:"rgba(5,11,20,0.95)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,cursor:"pointer",animation:"fadeIn .3s ease"}}>
           <div style={{textAlign:"center",animation:"popIn .5s cubic-bezier(0.175, 0.885, 0.32, 1.275)"}}>
             <div style={{fontSize:96,lineHeight:1,filter:`drop-shadow(0 0 20px ${C.accent})`}}>❄️</div>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:56,fontWeight:700,color:C.accent,letterSpacing:8,marginTop:16,textShadow:`0 0 20px ${C.accentGlow}`}}>LOCKED IN</div>
+            <div style={{fontFamily:"'Outfit', sans-serif",fontSize:56,fontWeight:700,color:C.accent,letterSpacing:8,marginTop:16,textShadow:`0 0 20px ${C.accentGlow}`}}>LOCKED IN</div>
             <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:C.text,marginTop:14,letterSpacing:3,background:C.borderHi,padding:"6px 12px",borderRadius:20,display:"inline-block"}}>SYSTEM OPTIMAL</div>
           </div>
         </div>
@@ -487,22 +487,22 @@ function HabitsPage(){
       {calHabit&&<CalendarModal habitId={calHabit.id} habitLabel={calHabit.label} onClose={()=>setCalHabit(null)}/>}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:32,animation:"slideIn .5s cubic-bezier(0.175, 0.885, 0.32, 1.275)"}}>
         <div>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:64,fontWeight:700,lineHeight:0.85,letterSpacing:2,color:C.accent,textShadow:`0 0 16px ${C.accentGlow}`}}>LOCK</div>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:64,fontWeight:700,lineHeight:0.85,letterSpacing:2,color:C.text}}>IN.</div>
+          <div style={{fontFamily:"'Outfit', sans-serif",fontSize:64,fontWeight:700,lineHeight:0.85,letterSpacing:2,color:C.accent,textShadow:`0 0 16px ${C.accentGlow}`}}>LOCK</div>
+          <div style={{fontFamily:"'Outfit', sans-serif",fontSize:64,fontWeight:700,lineHeight:0.85,letterSpacing:2,color:C.text}}>IN.</div>
           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:C.muted,letterSpacing:2,marginTop:12,background:C.border,padding:"4px 8px",borderRadius:4,display:"inline-block"}}>{dayLabel.toUpperCase()}</div>
         </div>
         <div style={{textAlign:"right",paddingTop:4}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:76,fontWeight:300,lineHeight:0.9,color:C.accent,letterSpacing:-2,textShadow:`0 0 16px ${C.accentGlow}`}}>{daysLeft()}</div>
+          <div style={{fontFamily:"'Outfit', sans-serif",fontSize:76,fontWeight:300,lineHeight:0.9,color:C.accent,letterSpacing:-2,textShadow:`0 0 16px ${C.accentGlow}`}}>{daysLeft()}</div>
           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:C.muted,letterSpacing:1.5,lineHeight:1.6,marginTop:4}}>DAYS TO<br/>JUNE 1ST</div>
         </div>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:28,animation:"slideIn .5s cubic-bezier(0.175, 0.885, 0.32, 1.275) .05s both"}}>
         <Card highlight={displayStreak>0} style={{display:"flex",flexDirection:"column",justifyContent:"center"}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:48,fontWeight:700,lineHeight:1,color:displayStreak>0?C.accent:C.text,textShadow:displayStreak>0?`0 0 12px ${C.accentGlow}`:"none"}}>{displayStreak} <span style={{fontSize:26}}>🔥</span></div>
+          <div style={{fontFamily:"'Outfit', sans-serif",fontSize:48,fontWeight:700,lineHeight:1,color:displayStreak>0?C.accent:C.text,textShadow:displayStreak>0?`0 0 12px ${C.accentGlow}`:"none"}}>{displayStreak} <span style={{fontSize:26}}>🔥</span></div>
           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:C.muted,marginTop:8,letterSpacing:1.5}}>DAY STREAK</div>
         </Card>
         <Card highlight={allDone} style={{display:"flex",flexDirection:"column",justifyContent:"center"}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:48,fontWeight:700,lineHeight:1,color:allDone?C.accent:C.text,textShadow:allDone?`0 0 12px ${C.accentGlow}`:"none"}}>{done}<span style={{fontSize:24,color:C.muted,fontWeight:400}}>/{total}</span></div>
+          <div style={{fontFamily:"'Outfit', sans-serif",fontSize:48,fontWeight:700,lineHeight:1,color:allDone?C.accent:C.text,textShadow:allDone?`0 0 12px ${C.accentGlow}`:"none"}}>{done}<span style={{fontSize:24,color:C.muted,fontWeight:400}}>/{total}</span></div>
           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:C.muted,marginTop:8,letterSpacing:1.5}}>TASKS CLEAR</div>
         </Card>
       </div>
@@ -514,7 +514,7 @@ function HabitsPage(){
       </div>
       <div style={{marginBottom:28,animation:"slideIn .5s cubic-bezier(0.175, 0.885, 0.32, 1.275) .15s both"}}>
         <SectionLabel action={
-          <button onClick={()=>{setAddingTask(true);setTimeout(()=>inputRef.current?.focus(),50);}} className="btn-press" style={{background:C.border,border:`1px solid ${C.borderHi}`,borderRadius:6,padding:"4px 12px",color:C.text,fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,fontWeight:600,letterSpacing:1,cursor:"pointer",transition:"all .2s"}} onMouseEnter={e=>{e.target.style.borderColor=C.accent;e.target.style.color=C.accent;}} onMouseLeave={e=>{e.target.style.borderColor=C.borderHi;e.target.style.color=C.text;}}>+ ADD</button>
+          <button onClick={()=>{setAddingTask(true);setTimeout(()=>inputRef.current?.focus(),50);}} className="btn-press" style={{background:C.border,border:`1px solid ${C.borderHi}`,borderRadius:6,padding:"4px 12px",color:C.text,fontFamily:"'Outfit', sans-serif",fontSize:12,fontWeight:600,letterSpacing:1,cursor:"pointer",transition:"all .2s"}} onMouseEnter={e=>{e.target.style.borderColor=C.accent;e.target.style.color=C.accent;}} onMouseLeave={e=>{e.target.style.borderColor=C.borderHi;e.target.style.color=C.text;}}>+ ADD</button>
         }>Auxiliary Modules</SectionLabel>
         {customHabits.length===0&&!addingTask&&(
           <div style={{padding:"20px 14px",background:C.surface,border:`1px dashed ${C.borderHi}`,borderRadius:12,textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:C.muted,lineHeight:1.8}}>
@@ -526,9 +526,9 @@ function HabitsPage(){
         ))}
         {addingTask&&(
           <div style={{display:"flex",gap:8,marginTop:8,animation:"slideIn .2s ease"}}>
-            <input ref={inputRef} value={newTask} onChange={e=>setNewTask(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")submitCustom();if(e.key==="Escape"){setAddingTask(false);setNewTask("");}}} placeholder="e.g. Meditate 10 min" style={{flex:1,padding:"12px 16px",background:C.bg,border:`1px solid ${C.accent}`,borderRadius:10,color:C.text,fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,letterSpacing:0.5,outline:"none",boxShadow:`0 0 10px ${C.accentGlow}`}}/>
-            <button onClick={submitCustom} className="btn-press" style={{background:C.accent,border:"none",borderRadius:10,padding:"0 20px",color:C.bg,fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,fontWeight:700,letterSpacing:1,cursor:"pointer",boxShadow:`0 4px 12px ${C.accent}44`}}>ADD</button>
-            <button onClick={()=>{setAddingTask(false);setNewTask("");}} className="btn-press" style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,padding:"0 16px",color:C.muted,fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,cursor:"pointer"}}>✕</button>
+            <input ref={inputRef} value={newTask} onChange={e=>setNewTask(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")submitCustom();if(e.key==="Escape"){setAddingTask(false);setNewTask("");}}} placeholder="e.g. Meditate 10 min" style={{flex:1,padding:"12px 16px",background:C.bg,border:`1px solid ${C.accent}`,borderRadius:10,color:C.text,fontFamily:"'Outfit', sans-serif",fontSize:16,letterSpacing:0.5,outline:"none",boxShadow:`0 0 10px ${C.accentGlow}`}}/>
+            <button onClick={submitCustom} className="btn-press" style={{background:C.accent,border:"none",borderRadius:10,padding:"0 20px",color:C.bg,fontFamily:"'Outfit', sans-serif",fontSize:16,fontWeight:700,letterSpacing:1,cursor:"pointer",boxShadow:`0 4px 12px ${C.accent}44`}}>ADD</button>
+            <button onClick={()=>{setAddingTask(false);setNewTask("");}} className="btn-press" style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,padding:"0 16px",color:C.muted,fontFamily:"'Outfit', sans-serif",fontSize:16,cursor:"pointer"}}>✕</button>
           </div>
         )}
       </div>
@@ -536,7 +536,7 @@ function HabitsPage(){
         <SectionLabel>Recovery System</SectionLabel>
         <div onClick={toggleSleep} className="hover-lift" style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 18px",background:sleepDone?`${C.green}15`:C.surface,border:`1px solid ${sleepDone?C.green:C.border}`,borderRadius:12,cursor:"pointer",transition:"all .3s ease",boxShadow:sleepDone?`0 4px 16px ${C.green}22`:"0 4px 6px rgba(0,0,0,0.2)"}}>
           <div>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,fontWeight:600,letterSpacing:0.5,color:sleepDone?C.green:C.text,textShadow:sleepDone?`0 0 8px ${C.green}55`:"none"}}>Got 8+ hours of sleep</div>
+            <div style={{fontFamily:"'Outfit', sans-serif",fontSize:18,fontWeight:600,letterSpacing:0.5,color:sleepDone?C.green:C.text,textShadow:sleepDone?`0 0 8px ${C.green}55`:"none"}}>Got 8+ hours of sleep</div>
             <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:C.muted,marginTop:4,letterSpacing:1.5}}>MINIMUM 8 HRS / NIGHT</div>
           </div>
           <div style={{width:48,height:26,borderRadius:13,background:sleepDone?C.green:C.bg,border:`1.5px solid ${sleepDone?C.green:C.borderHi}`,position:"relative",transition:"all .3s cubic-bezier(0.4, 0, 0.2, 1)",flexShrink:0,boxShadow:sleepDone?`0 0 10px ${C.green}`:"inset 0 2px 4px rgba(0,0,0,0.5)"}}>
@@ -549,15 +549,15 @@ function HabitsPage(){
         <Card highlight={gymCount>=GYM_TARGET}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
             <div>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:22,fontWeight:600,letterSpacing:1}}>Sessions logged</div>
+              <div style={{fontFamily:"'Outfit', sans-serif",fontSize:22,fontWeight:600,letterSpacing:1}}>Sessions logged</div>
               <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:C.muted,marginTop:4,letterSpacing:1}}>5× MINIMUM — PPL SPLIT</div>
             </div>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:56,fontWeight:300,lineHeight:1,color:gymCount>=GYM_TARGET?C.accent:C.text,textShadow:gymCount>=GYM_TARGET?`0 0 16px ${C.accentGlow}`:"none"}}>{gymCount}<span style={{fontSize:24,color:C.muted}}>/{GYM_TARGET}</span></div>
+            <div style={{fontFamily:"'Outfit', sans-serif",fontSize:56,fontWeight:300,lineHeight:1,color:gymCount>=GYM_TARGET?C.accent:C.text,textShadow:gymCount>=GYM_TARGET?`0 0 16px ${C.accentGlow}`:"none"}}>{gymCount}<span style={{fontSize:24,color:C.muted}}>/{GYM_TARGET}</span></div>
           </div>
           <div style={{display:"flex",gap:6,marginBottom:16}}>
             {Array.from({length:GYM_TARGET},(_,i)=><div key={i} style={{flex:1,height:6,borderRadius:3,background:i<gymCount?C.accent:C.bg,boxShadow:i<gymCount?`0 0 8px ${C.accent}`:"inset 0 1px 3px rgba(0,0,0,0.5)",transition:"all .4s cubic-bezier(0.4, 0, 0.2, 1)"}}/>)}
           </div>
-          <button onClick={addGym} className="btn-press" style={{width:"100%",padding:"14px",background:gymCount>=GYM_TARGET?C.accentDim:C.accent,border:"none",borderRadius:10,color:gymCount>=GYM_TARGET?C.text:C.bg,fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,fontWeight:700,letterSpacing:2,cursor:"pointer",transition:"all .2s",boxShadow:gymCount>=GYM_TARGET?"none":`0 4px 16px ${C.accent}44`}}>
+          <button onClick={addGym} className="btn-press" style={{width:"100%",padding:"14px",background:gymCount>=GYM_TARGET?C.accentDim:C.accent,border:"none",borderRadius:10,color:gymCount>=GYM_TARGET?C.text:C.bg,fontFamily:"'Outfit', sans-serif",fontSize:16,fontWeight:700,letterSpacing:2,cursor:"pointer",transition:"all .2s",boxShadow:gymCount>=GYM_TARGET?"none":`0 4px 16px ${C.accent}44`}}>
             {gymCount>=GYM_TARGET?"✓ DIRECTIVE COMPLETE — TAP RESET":"+ LOG GYM SESSION"}
           </button>
         </Card>
@@ -567,15 +567,15 @@ function HabitsPage(){
         <Card highlight={runs>=RUN_TARGET}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
             <div>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:22,fontWeight:600,letterSpacing:1}}>Runs logged</div>
+              <div style={{fontFamily:"'Outfit', sans-serif",fontSize:22,fontWeight:600,letterSpacing:1}}>Runs logged</div>
               <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:C.muted,marginTop:4,letterSpacing:1}}>3× MINIMUM</div>
             </div>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:56,fontWeight:300,lineHeight:1,color:runs>=RUN_TARGET?C.accent:C.text,textShadow:runs>=RUN_TARGET?`0 0 16px ${C.accentGlow}`:"none"}}>{runs}<span style={{fontSize:24,color:C.muted}}>/{RUN_TARGET}</span></div>
+            <div style={{fontFamily:"'Outfit', sans-serif",fontSize:56,fontWeight:300,lineHeight:1,color:runs>=RUN_TARGET?C.accent:C.text,textShadow:runs>=RUN_TARGET?`0 0 16px ${C.accentGlow}`:"none"}}>{runs}<span style={{fontSize:24,color:C.muted}}>/{RUN_TARGET}</span></div>
           </div>
           <div style={{display:"flex",gap:6,marginBottom:16}}>
             {[0,1,2].map(i=><div key={i} style={{flex:1,height:6,borderRadius:3,background:i<runs?C.accent:C.bg,boxShadow:i<runs?`0 0 8px ${C.accent}`:"inset 0 1px 3px rgba(0,0,0,0.5)",transition:"all .4s cubic-bezier(0.4, 0, 0.2, 1)"}}/>)}
           </div>
-          <button onClick={addRun} className="btn-press" style={{width:"100%",padding:"14px",background:runs>=RUN_TARGET?C.accentDim:C.accent,border:"none",borderRadius:10,color:runs>=RUN_TARGET?C.text:C.bg,fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,fontWeight:700,letterSpacing:2,cursor:"pointer",transition:"all .2s",boxShadow:runs>=RUN_TARGET?"none":`0 4px 16px ${C.accent}44`}}>
+          <button onClick={addRun} className="btn-press" style={{width:"100%",padding:"14px",background:runs>=RUN_TARGET?C.accentDim:C.accent,border:"none",borderRadius:10,color:runs>=RUN_TARGET?C.text:C.bg,fontFamily:"'Outfit', sans-serif",fontSize:16,fontWeight:700,letterSpacing:2,cursor:"pointer",transition:"all .2s",boxShadow:runs>=RUN_TARGET?"none":`0 4px 16px ${C.accent}44`}}>
             {runs>=RUN_TARGET?"✓ DIRECTIVE COMPLETE — TAP RESET":"+ LOG A RUN"}
           </button>
         </Card>
@@ -630,7 +630,7 @@ export default function LockIn(){
   return (
     <div style={{background:C.bg,minHeight:"100vh",color:C.text}}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
         body{background:${C.bg}!important;-webkit-font-smoothing:antialiased;}
         input{outline:none;} button{cursor:pointer;}
@@ -654,12 +654,12 @@ export default function LockIn(){
           {[{id:"habits",icon:"✓",label:"Habits"},{id:"gym",icon:"💪",label:"Gym"}].map(tab=>(
             <button key={tab.id} onClick={()=>setPage(tab.id)} className="btn-press" style={{flex:1,padding:"12px 0",background:page===tab.id?`${C.accent}15`:"transparent",border:`1px solid ${page===tab.id?C.accentDim:"transparent"}`,boxShadow:page===tab.id?`0 0 12px ${C.accentGlow}`:"none",borderRadius:12,display:"flex",flexDirection:"column",alignItems:"center",gap:4,cursor:"pointer",transition:"all .2s cubic-bezier(0.4, 0, 0.2, 1)"}}>
               <span style={{fontSize:20,lineHeight:1,filter:page===tab.id?`drop-shadow(0 0 6px ${C.accent})`:"grayscale(100%)",opacity:page===tab.id?1:0.6}}>{tab.icon}</span>
-              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,letterSpacing:1.5,color:page===tab.id?C.accent:C.muted,fontWeight:700}}>{tab.label.toUpperCase()}</span>
+              <span style={{fontFamily:"'Outfit', sans-serif",fontSize:13,letterSpacing:1.5,color:page===tab.id?C.accent:C.muted,fontWeight:700}}>{tab.label.toUpperCase()}</span>
             </button>
           ))}
           <button onClick={()=>supabase.auth.signOut()} className="btn-press" style={{flex:1,padding:"12px 0",background:"transparent",border:"1px solid transparent",borderRadius:12,display:"flex",flexDirection:"column",alignItems:"center",gap:4,cursor:"pointer",transition:"all .2s ease"}} onMouseEnter={e=>e.currentTarget.querySelector("span:last-child").style.color=C.danger} onMouseLeave={e=>e.currentTarget.querySelector("span:last-child").style.color=C.muted}>
             <span style={{fontSize:20,lineHeight:1,opacity:0.6}}>↩</span>
-            <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,letterSpacing:1.5,color:C.muted,fontWeight:700,transition:"color .2s"}}>LOG OUT</span>
+            <span style={{fontFamily:"'Outfit', sans-serif",fontSize:13,letterSpacing:1.5,color:C.muted,fontWeight:700,transition:"color .2s"}}>LOG OUT</span>
           </button>
         </div>
       </div>
