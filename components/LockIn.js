@@ -2,23 +2,26 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { BarChart, Bar, XAxis, Cell, ResponsiveContainer } from "recharts";
+import { supabase } from "../lib/supabase";
+import { dbGet, dbSet } from "../lib/db";
+import Auth from "./Auth";
 
-/* ══════════════════════ PALETTE ════════════════════════════════════════════ */
+/* ══════════ PALETTE ══════════════════════════════════════════════════════ */
 const C = {
   bg:"#08090a", surface:"#0f1012", border:"#1c1e22", borderHi:"#2a2d33",
   accent:"#f97316", accentDim:"#7c3010", accentGlow:"rgba(249,115,22,0.1)",
   text:"#e8e9eb", muted:"#454850", faint:"#14161a",
-  danger:"#ef4444", green:"#22c55e", blue:"#3b82f6",
+  danger:"#ef4444", green:"#22c55e",
 };
 
-/* ══════════════════════ DATA ═══════════════════════════════════════════════ */
+/* ══════════ DATA ══════════════════════════════════════════════════════════ */
 const CORE_HABITS = [
-  { id:"pushups",  label:"Pushups",         cat:"FITNESS" },
-  { id:"pullups",  label:"Pullups",          cat:"FITNESS" },
-  { id:"read",     label:"Read 15 min",      cat:"MIND"    },
-  { id:"study",    label:"Study 1 hr",       cat:"SCHOOL"  },
-  { id:"hw",       label:"Homework 1 hr",    cat:"SCHOOL"  },
-  { id:"projects", label:"Projects 1 hr",    cat:"SCHOOL"  },
+  { id:"pushups",  label:"Pushups",          cat:"FITNESS" },
+  { id:"pullups",  label:"Pullups",           cat:"FITNESS" },
+  { id:"read",     label:"Read 15 min",       cat:"MIND"    },
+  { id:"study",    label:"Study 1 hr",        cat:"SCHOOL"  },
+  { id:"hw",       label:"Homework 1 hr",     cat:"SCHOOL"  },
+  { id:"projects", label:"Projects 1 hr",     cat:"SCHOOL"  },
 ];
 const RUN_TARGET = 3;
 const GYM_TARGET = 5;
@@ -31,28 +34,24 @@ const PPL_DAYS = [
     suggestions:["Lat Pulldown","Barbell Row","Seated Row","Bicep Curl","Hammer Curl","Face Pull"] },
   { id:"legs_shoulders", label:"Legs & Shoulders",  short:"Legs / Shld",  day:3, muscles:["legs","shoulders"], color:"#22c55e",
     suggestions:["Squat","Leg Press","Romanian Deadlift","Leg Curl","Shoulder Press","Lateral Raise","Calf Raise"] },
-  { id:"chest_back",     label:"Chest & Back",       short:"Chest / Back", day:4, muscles:["chest","back"],    color:"#a855f7",
+  { id:"chest_back",     label:"Chest & Back",      short:"Chest / Back", day:4, muscles:["chest","back"],    color:"#a855f7",
     suggestions:["Incline DB Press","Pull-ups","Dips","Cable Row","Pec Deck","T-Bar Row"] },
-  { id:"abs_flex",       label:"Abs & Flex",          short:"Abs / Flex",   day:5, muscles:["abs"],             color:"#ec4899",
+  { id:"abs_flex",       label:"Abs & Flex",        short:"Abs / Flex",   day:5, muscles:["abs"],             color:"#ec4899",
     suggestions:["Crunches","Plank","Leg Raise","Cable Crunch","Russian Twist","Mountain Climbers"] },
 ];
 const MUSCLE_GROUPS = ["chest","back","biceps","triceps","shoulders","legs","abs"];
 
-/* ══════════════════════ HELPERS ════════════════════════════════════════════ */
-const PFX = "li3:";
-function lget(k){ try{ const r=localStorage.getItem(PFX+k); return r?JSON.parse(r):null; }catch{ return null; } }
-function lset(k,v){ try{ localStorage.setItem(PFX+k,JSON.stringify(v)); }catch{} }
+/* ══════════ HELPERS ════════════════════════════════════════════════════════ */
 function todayKey(){ return new Date().toISOString().slice(0,10); }
 function weekKey(){ const d=new Date(),day=d.getDay(),m=new Date(d); m.setDate(d.getDate()-day+(day===0?-6:1)); return m.toISOString().slice(0,10); }
 function daysLeft(){ return Math.max(0,Math.ceil((JUNE_1-new Date())/86400000)); }
-function mkDate(y,m,d){ return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`; }
+function mkDate(y,mo,d){ return `${y}-${String(mo+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`; }
 function fmtMonth(y,m){ return new Date(y,m,1).toLocaleDateString("en-US",{month:"long",year:"numeric"}); }
 function uid(){ return Math.random().toString(36).slice(2,9); }
-function muscleColor(progress){
-  const p=Math.min(1,Math.max(0,progress/100));
-  if(p<0.02) return C.faint;
-  const r=Math.round(232+(59-232)*p),g=Math.round(233+(130-233)*p),b=Math.round(235+(246-235)*p);
-  return `rgb(${r},${g},${b})`;
+function muscleColor(p){
+  const t=Math.min(1,Math.max(0,p/100));
+  if(t<0.02)return C.faint;
+  return `rgb(${Math.round(232+(59-232)*t)},${Math.round(233+(130-233)*t)},${Math.round(235+(246-235)*t)})`;
 }
 function calcMuscleProgress(totals){
   const MAX=300,out={};
@@ -60,7 +59,7 @@ function calcMuscleProgress(totals){
   return out;
 }
 
-/* ══════════════════════ SHARED UI ══════════════════════════════════════════ */
+/* ══════════ SHARED UI ══════════════════════════════════════════════════════ */
 function SectionLabel({ children, action }){
   return (
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
@@ -77,23 +76,35 @@ function Card({ children, highlight, style={} }){
   );
 }
 
-/* ══════════════════════ CALENDAR MODAL ═════════════════════════════════════ */
+/* ══════════ CALENDAR MODAL ════════════════════════════════════════════════ */
 function CalendarModal({ habitId, habitLabel, onClose }){
   const todayStr=todayKey(),now=new Date();
   const [yr,setYr]=useState(now.getFullYear());
   const [mo,setMo]=useState(now.getMonth());
   const [data,setData]=useState({});
+  const [loading,setLoading]=useState(false);
+
   useEffect(()=>{
-    const days=new Date(yr,mo+1,0).getDate(),d={};
-    for(let i=1;i<=days;i++){ const ds=mkDate(yr,mo,i),raw=lget("day:"+ds); d[ds]=raw?.habits?.[habitId]??null; }
-    setData(d);
+    let cancelled=false;
+    (async()=>{
+      setLoading(true);
+      const days=new Date(yr,mo+1,0).getDate(),d={};
+      for(let i=1;i<=days;i++){
+        const ds=mkDate(yr,mo,i),raw=await dbGet("day:"+ds);
+        d[ds]=raw?.habits?.[habitId]??null;
+      }
+      if(!cancelled){ setData(d); setLoading(false); }
+    })();
+    return ()=>{ cancelled=true; };
   },[yr,mo,habitId]);
+
   const daysInMonth=new Date(yr,mo+1,0).getDate(),firstDow=new Date(yr,mo,1).getDay(),cells=[];
   for(let i=0;i<firstDow;i++) cells.push(null);
   for(let d=1;d<=daysInMonth;d++) cells.push(d);
   const canNext=yr<now.getFullYear()||(yr===now.getFullYear()&&mo<now.getMonth());
   const prevMo=()=>{ if(mo===0){setMo(11);setYr(y=>y-1);}else setMo(m=>m-1); };
   const nextMo=()=>{ if(!canNext)return; if(mo===11){setMo(0);setYr(y=>y+1);}else setMo(m=>m+1); };
+
   return (
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(8,9,10,0.9)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:400,padding:"0 16px",animation:"fadeIn .2s ease"}}>
       <div onClick={e=>e.stopPropagation()} style={{background:C.surface,border:`1px solid ${C.borderHi}`,borderRadius:16,padding:"20px 16px",width:"100%",maxWidth:340,animation:"popIn .25s ease"}}>
@@ -109,16 +120,20 @@ function CalendarModal({ habitId, habitLabel, onClose }){
         <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:3,marginBottom:5}}>
           {["S","M","T","W","T","F","S"].map((d,i)=><div key={i} style={{textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:C.muted,paddingBottom:2}}>{d}</div>)}
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:3}}>
-          {cells.map((day,i)=>{
-            if(!day) return <div key={i}/>;
-            const ds=mkDate(yr,mo,day),isToday=ds===todayStr,isPast=ds<todayStr,status=data[ds];
-            let bg=C.faint,tc=C.muted;
-            if(status===true){ bg="rgba(34,197,94,0.18)"; tc=C.green; }
-            else if(isPast){ bg="rgba(239,68,68,0.13)"; tc="#ef444477"; }
-            return <div key={i} style={{aspectRatio:"1",display:"flex",alignItems:"center",justifyContent:"center",background:bg,borderRadius:5,border:isToday?`1.5px solid ${C.accent}`:"1px solid transparent",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:tc}}>{day}</div>;
-          })}
-        </div>
+        {loading?(
+          <div style={{textAlign:"center",padding:"20px 0",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:C.muted}}>loading...</div>
+        ):(
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:3}}>
+            {cells.map((day,i)=>{
+              if(!day)return <div key={i}/>;
+              const ds=mkDate(yr,mo,day),isToday=ds===todayStr,isPast=ds<todayStr,status=data[ds];
+              let bg=C.faint,tc=C.muted;
+              if(status===true){bg="rgba(34,197,94,0.18)";tc=C.green;}
+              else if(isPast){bg="rgba(239,68,68,0.13)";tc="#ef444477";}
+              return <div key={i} style={{aspectRatio:"1",display:"flex",alignItems:"center",justifyContent:"center",background:bg,borderRadius:5,border:isToday?`1.5px solid ${C.accent}`:"1px solid transparent",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:tc}}>{day}</div>;
+            })}
+          </div>
+        )}
         <div style={{display:"flex",gap:12,marginTop:14,justifyContent:"center"}}>
           {[[C.green,"Done"],["#ef4444","Missed"],[C.muted,"Future"]].map(([col,lbl])=>(
             <div key={lbl} style={{display:"flex",alignItems:"center",gap:5}}>
@@ -132,24 +147,24 @@ function CalendarModal({ habitId, habitLabel, onClose }){
   );
 }
 
-/* ══════════════════════ BODY MAP SVG ═══════════════════════════════════════ */
+/* ══════════ BODY MAP ═══════════════════════════════════════════════════════ */
 function BodyMapSVG({ progress, view }){
-  const mc=(m)=>muscleColor(progress[m]||0);
-  const base="#161820",outline=C.border;
+  const mc=m=>muscleColor(progress[m]||0);
+  const base="#161820",ol=C.border;
   const Sil=()=>(
     <>
-      <circle cx={80} cy={22} r={17} fill="#1e2025" stroke={outline} strokeWidth={0.8}/>
-      <rect x={73} y={38} width={14} height={14} rx={4} fill="#1e2025" stroke={outline} strokeWidth={0.5}/>
-      <path d="M44,52 C32,54 26,68 26,80 L26,162 C26,168 32,172 40,172 L120,172 C128,172 134,168 134,162 L134,80 C134,68 128,54 116,52 Z" fill={base} stroke={outline} strokeWidth={0.8}/>
-      <rect x={18} y={68} width={18} height={62} rx={9} fill={base} stroke={outline} strokeWidth={0.5}/>
-      <rect x={124} y={68} width={18} height={62} rx={9} fill={base} stroke={outline} strokeWidth={0.5}/>
-      <rect x={16} y={134} width={16} height={44} rx={8} fill={base} stroke={outline} strokeWidth={0.5}/>
-      <rect x={128} y={134} width={16} height={44} rx={8} fill={base} stroke={outline} strokeWidth={0.5}/>
-      <rect x={44} y={170} width={72} height={18} rx={4} fill={base} stroke={outline} strokeWidth={0.5}/>
-      <rect x={44} y={186} width={30} height={70} rx={15} fill={base} stroke={outline} strokeWidth={0.5}/>
-      <rect x={86} y={186} width={30} height={70} rx={15} fill={base} stroke={outline} strokeWidth={0.5}/>
-      <rect x={47} y={260} width={24} height={50} rx={12} fill={base} stroke={outline} strokeWidth={0.5}/>
-      <rect x={89} y={260} width={24} height={50} rx={12} fill={base} stroke={outline} strokeWidth={0.5}/>
+      <circle cx={80} cy={22} r={17} fill="#1e2025" stroke={ol} strokeWidth={0.8}/>
+      <rect x={73} y={38} width={14} height={14} rx={4} fill="#1e2025" stroke={ol} strokeWidth={0.5}/>
+      <path d="M44,52 C32,54 26,68 26,80 L26,162 C26,168 32,172 40,172 L120,172 C128,172 134,168 134,162 L134,80 C134,68 128,54 116,52 Z" fill={base} stroke={ol} strokeWidth={0.8}/>
+      <rect x={18} y={68} width={18} height={62} rx={9} fill={base} stroke={ol} strokeWidth={0.5}/>
+      <rect x={124} y={68} width={18} height={62} rx={9} fill={base} stroke={ol} strokeWidth={0.5}/>
+      <rect x={16} y={134} width={16} height={44} rx={8} fill={base} stroke={ol} strokeWidth={0.5}/>
+      <rect x={128} y={134} width={16} height={44} rx={8} fill={base} stroke={ol} strokeWidth={0.5}/>
+      <rect x={44} y={170} width={72} height={18} rx={4} fill={base} stroke={ol} strokeWidth={0.5}/>
+      <rect x={44} y={186} width={30} height={70} rx={15} fill={base} stroke={ol} strokeWidth={0.5}/>
+      <rect x={86} y={186} width={30} height={70} rx={15} fill={base} stroke={ol} strokeWidth={0.5}/>
+      <rect x={47} y={260} width={24} height={50} rx={12} fill={base} stroke={ol} strokeWidth={0.5}/>
+      <rect x={89} y={260} width={24} height={50} rx={12} fill={base} stroke={ol} strokeWidth={0.5}/>
     </>
   );
   if(view==="front") return (
@@ -186,7 +201,7 @@ function BodyMapSVG({ progress, view }){
   );
 }
 
-/* ══════════════════════ EXERCISE CARD ══════════════════════════════════════ */
+/* ══════════ EXERCISE CARD ══════════════════════════════════════════════════ */
 function ExerciseCard({ exercise, accentColor, onAddSet, onRemoveSet, onRemove }){
   const [reps,setReps]=useState("10");
   const [weight,setWeight]=useState("");
@@ -231,7 +246,7 @@ function ExerciseCard({ exercise, accentColor, onAddSet, onRemoveSet, onRemove }
   );
 }
 
-/* ══════════════════════ GYM PAGE ═══════════════════════════════════════════ */
+/* ══════════ GYM PAGE ════════════════════════════════════════════════════════ */
 function GymPage(){
   const today=todayKey();
   const [bodyView,setBodyView]=useState("front");
@@ -242,31 +257,42 @@ function GymPage(){
   const [customExName,setCustomExName]=useState("");
   const [ready,setReady]=useState(false);
   const exInputRef=useRef(null);
-  useEffect(()=>{ setMuscleTotals(lget("muscleTotals")||{}); setReady(true); },[]);
+
+  useEffect(()=>{
+    dbGet("muscleTotals").then(v=>{ setMuscleTotals(v||{}); setReady(true); });
+  },[]);
+
   const progress=calcMuscleProgress(muscleTotals);
-  const selectDay=(dayId)=>{ setSelectedDay(dayId); const saved=lget("workout:"+today+":"+dayId); setWorkout(saved||{dayType:dayId,exercises:[]}); setShowAddEx(false); };
-  const saveW=(updated)=>{ setWorkout(updated); lset("workout:"+today+":"+updated.dayType,updated); };
-  const addExercise=(name,muscleGroups)=>{ if(!workout)return; saveW({...workout,exercises:[...workout.exercises,{id:uid(),name,muscleGroups,sets:[]}]}); setShowAddEx(false); setCustomExName(""); };
-  const removeExercise=(exId)=>{
-    if(!workout)return;
-    const ex=workout.exercises.find(e=>e.id===exId);
-    if(ex){ const t={...muscleTotals}; ex.sets.forEach(()=>ex.muscleGroups.forEach(mg=>{ t[mg]=Math.max(0,(t[mg]||0)-1); })); setMuscleTotals(t); lset("muscleTotals",t); }
-    saveW({...workout,exercises:workout.exercises.filter(e=>e.id!==exId)});
+  const selectDay=async(dayId)=>{
+    setSelectedDay(dayId);
+    const saved=await dbGet("workout:"+today+":"+dayId);
+    setWorkout(saved||{dayType:dayId,exercises:[]});
+    setShowAddEx(false);
   };
-  const addSet=(exId,reps,weight)=>{
+  const saveW=async(updated)=>{ setWorkout(updated); await dbSet("workout:"+today+":"+updated.dayType,updated); };
+  const addExercise=async(name,muscleGroups)=>{ if(!workout)return; await saveW({...workout,exercises:[...workout.exercises,{id:uid(),name,muscleGroups,sets:[]}]}); setShowAddEx(false); setCustomExName(""); };
+  const removeExercise=async(exId)=>{
     if(!workout)return;
     const ex=workout.exercises.find(e=>e.id===exId);
-    saveW({...workout,exercises:workout.exercises.map(e=>e.id===exId?{...e,sets:[...e.sets,{id:uid(),reps,weight}]}:e)});
-    if(ex){ const t={...muscleTotals}; ex.muscleGroups.forEach(mg=>{ t[mg]=(t[mg]||0)+1; }); setMuscleTotals(t); lset("muscleTotals",t); }
+    if(ex){ const t={...muscleTotals}; ex.sets.forEach(()=>ex.muscleGroups.forEach(mg=>{ t[mg]=Math.max(0,(t[mg]||0)-1); })); setMuscleTotals(t); await dbSet("muscleTotals",t); }
+    await saveW({...workout,exercises:workout.exercises.filter(e=>e.id!==exId)});
   };
-  const removeSet=(exId,setId)=>{
+  const addSet=async(exId,reps,weight)=>{
     if(!workout)return;
     const ex=workout.exercises.find(e=>e.id===exId);
-    if(ex&&ex.sets.find(s=>s.id===setId)){ const t={...muscleTotals}; ex.muscleGroups.forEach(mg=>{ t[mg]=Math.max(0,(t[mg]||0)-1); }); setMuscleTotals(t); lset("muscleTotals",t); }
-    saveW({...workout,exercises:workout.exercises.map(e=>e.id===exId?{...e,sets:e.sets.filter(s=>s.id!==setId)}:e)});
+    const updated={...workout,exercises:workout.exercises.map(e=>e.id===exId?{...e,sets:[...e.sets,{id:uid(),reps,weight}]}:e)};
+    await saveW(updated);
+    if(ex){ const t={...muscleTotals}; ex.muscleGroups.forEach(mg=>{ t[mg]=(t[mg]||0)+1; }); setMuscleTotals(t); await dbSet("muscleTotals",t); }
+  };
+  const removeSet=async(exId,setId)=>{
+    if(!workout)return;
+    const ex=workout.exercises.find(e=>e.id===exId);
+    if(ex&&ex.sets.find(s=>s.id===setId)){ const t={...muscleTotals}; ex.muscleGroups.forEach(mg=>{ t[mg]=Math.max(0,(t[mg]||0)-1); }); setMuscleTotals(t); await dbSet("muscleTotals",t); }
+    await saveW({...workout,exercises:workout.exercises.map(e=>e.id===exId?{...e,sets:e.sets.filter(s=>s.id!==setId)}:e)});
   };
   const curDef=PPL_DAYS.find(d=>d.id===selectedDay);
-  if(!ready)return null;
+  if(!ready)return <div style={{textAlign:"center",padding:40,fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:C.muted}}>loading...</div>;
+
   return (
     <div>
       <div style={{marginBottom:24}}>
@@ -350,11 +376,11 @@ function GymPage(){
   );
 }
 
-/* ══════════════════════ HABIT ROW ══════════════════════════════════════════ */
+/* ══════════ HABIT ROW ══════════════════════════════════════════════════════ */
 function HabitRow({ label, cat, done, onToggle, onCalendar, onRemove, index }){
   return (
     <div style={{display:"flex",alignItems:"stretch",marginBottom:6,animation:`slideIn .3s ease ${index*.04}s both`}}>
-      <div onClick={onToggle} style={{flex:1,display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:done?C.accentGlow:C.surface,border:`1px solid ${done?C.accentDim:C.border}`,borderRadius:onCalendar||onRemove?"10px 0 0 10px":"10px",cursor:"pointer",transition:"all .2s ease",borderRight:"none"}}>
+      <div onClick={onToggle} style={{flex:1,display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:done?C.accentGlow:C.surface,border:`1px solid ${done?C.accentDim:C.border}`,borderRadius:"10px 0 0 10px",cursor:"pointer",transition:"all .2s ease",borderRight:"none"}}>
         <div style={{width:20,height:20,borderRadius:6,flexShrink:0,background:done?C.accent:"transparent",border:`1.5px solid ${done?C.accent:C.borderHi}`,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s ease"}}>
           {done&&<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
         </div>
@@ -373,7 +399,7 @@ function HabitRow({ label, cat, done, onToggle, onCalendar, onRemove, index }){
   );
 }
 
-/* ══════════════════════ HABITS PAGE ════════════════════════════════════════ */
+/* ══════════ HABITS PAGE ════════════════════════════════════════════════════ */
 function HabitsPage(){
   const today=todayKey(),week=weekKey();
   const [habits,setHabits]=useState({});
@@ -390,64 +416,70 @@ function HabitsPage(){
   const [newTask,setNewTask]=useState("");
   const inputRef=useRef(null);
   const allHabits=[...CORE_HABITS,...customHabits.map(c=>({...c,cat:"CUSTOM"}))];
+
   useEffect(()=>{
-    const day=lget("day:"+today)||{habits:{},sleep:false};
-    const wk=lget("week:"+week)||{runs:0};
-    const gymWk=lget("gymWeek:"+week)||{count:0};
-    const cust=lget("customHabits")||[];
-    setHabits(day.habits||{});
-    setSleepDone(day.sleep===true);
-    setRuns(wk.runs||0);
-    setGymCount(gymWk.count||0);
-    setCustomHabits(cust);
-    let s=0; const chk=new Date(); chk.setDate(chk.getDate()-1);
-    for(let i=0;i<90;i++){
-      const d=lget("day:"+chk.toISOString().slice(0,10));
-      if(d&&Object.values(d.habits||{}).filter(Boolean).length>=CORE_HABITS.length)s++;
-      else break;
-      chk.setDate(chk.getDate()-1);
-    }
-    setStreak(s);
-    const bars=[];
-    for(let i=6;i>=0;i--){
-      const dt=new Date(); dt.setDate(dt.getDate()-i);
-      const ds=dt.toISOString().slice(0,10);
-      const dd=ds===today?day:lget("day:"+ds);
-      const cnt=dd?Object.values(dd.habits||{}).filter(Boolean).length:0;
-      bars.push({day:["Su","Mo","Tu","We","Th","Fr","Sa"][dt.getDay()],cnt,isToday:ds===today});
-    }
-    setChart(bars);
-    setReady(true);
+    (async()=>{
+      const [day,wk,gymWk,cust]=await Promise.all([
+        dbGet("day:"+today),dbGet("week:"+week),dbGet("gymWeek:"+week),dbGet("customHabits")
+      ]);
+      setHabits((day||{}).habits||{});
+      setSleepDone((day||{}).sleep===true);
+      setRuns((wk||{}).runs||0);
+      setGymCount((gymWk||{}).count||0);
+      setCustomHabits(cust||[]);
+      let s=0; const chk=new Date(); chk.setDate(chk.getDate()-1);
+      for(let i=0;i<90;i++){
+        const d=await dbGet("day:"+chk.toISOString().slice(0,10));
+        if(d&&Object.values(d.habits||{}).filter(Boolean).length>=CORE_HABITS.length)s++;
+        else break;
+        chk.setDate(chk.getDate()-1);
+      }
+      setStreak(s);
+      const bars=[];
+      for(let i=6;i>=0;i--){
+        const dt=new Date(); dt.setDate(dt.getDate()-i);
+        const ds=dt.toISOString().slice(0,10);
+        const dd=ds===today?day:await dbGet("day:"+ds);
+        const cnt=dd?Object.values(dd.habits||{}).filter(Boolean).length:0;
+        bars.push({day:["Su","Mo","Tu","We","Th","Fr","Sa"][dt.getDay()],cnt,isToday:ds===today});
+      }
+      setChart(bars);
+      setReady(true);
+    })();
   },[]);
-  const persistDay=useCallback((h,sl)=>{ lset("day:"+today,{habits:h,sleep:sl}); },[today]);
-  const toggleHabit=useCallback((id)=>{
+
+  const persistDay=useCallback(async(h,sl)=>{ await dbSet("day:"+today,{habits:h,sleep:sl}); },[today]);
+  const toggleHabit=useCallback(async(id)=>{
     setHabits(prev=>{
       const next={...prev,[id]:!prev[id]};
       persistDay(next,sleepDone);
       const cnt=Object.values(next).filter(Boolean).length;
       setChart(c=>c.map(b=>b.isToday?{...b,cnt}:b));
-      if(cnt>=CORE_HABITS.length+customHabits.length) setTimeout(()=>setShowComplete(true),200);
+      if(cnt>=CORE_HABITS.length+customHabits.length)setTimeout(()=>setShowComplete(true),200);
       return next;
     });
   },[sleepDone,customHabits.length,persistDay]);
-  const toggleSleep=()=>{ const n=!sleepDone; setSleepDone(n); persistDay(habits,n); };
-  const addRun=()=>{ const n=runs<RUN_TARGET?runs+1:0; setRuns(n); lset("week:"+week,{runs:n}); };
-  const addGym=()=>{ const n=gymCount<GYM_TARGET?gymCount+1:0; setGymCount(n); lset("gymWeek:"+week,{count:n}); };
-  const submitCustom=()=>{
+  const toggleSleep=async()=>{ const n=!sleepDone; setSleepDone(n); await persistDay(habits,n); };
+  const addRun=async()=>{ const n=runs<RUN_TARGET?runs+1:0; setRuns(n); await dbSet("week:"+week,{runs:n}); };
+  const addGym=async()=>{ const n=gymCount<GYM_TARGET?gymCount+1:0; setGymCount(n); await dbSet("gymWeek:"+week,{count:n}); };
+  const submitCustom=async()=>{
     const label=newTask.trim(); if(!label)return;
     const id="custom_"+Date.now(),next=[...customHabits,{id,label}];
-    setCustomHabits(next); lset("customHabits",next);
+    setCustomHabits(next); await dbSet("customHabits",next);
     setNewTask(""); setAddingTask(false);
   };
-  const removeCustom=(id)=>{
+  const removeCustom=async(id)=>{
     const next=customHabits.filter(c=>c.id!==id);
-    setCustomHabits(next); lset("customHabits",next);
+    setCustomHabits(next); await dbSet("customHabits",next);
     setHabits(prev=>{ const n={...prev}; delete n[id]; persistDay(n,sleepDone); return n; });
   };
+
   const done=Object.values(habits).filter(Boolean).length,total=allHabits.length,allDone=done>=total;
   const displayStreak=allDone?streak+1:streak;
   const dayLabel=new Date().toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});
-  if(!ready)return null;
+
+  if(!ready)return <div style={{textAlign:"center",padding:60,fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:C.muted,letterSpacing:2}}>loading your data...</div>;
+
   return (
     <div>
       {showComplete&&(
@@ -583,22 +615,31 @@ function HabitsPage(){
   );
 }
 
-/* ══════════════════════ ROOT ═══════════════════════════════════════════════ */
+/* ══════════ ROOT ═══════════════════════════════════════════════════════════ */
 export default function LockIn(){
+  const [session,setSession]=useState(undefined);
   const [page,setPage]=useState("habits");
-  const [ready,setReady]=useState(false);
-  useEffect(()=>{ setReady(true); },[]);
-  if(!ready) return (
-    <div style={{background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:22,letterSpacing:5,color:C.muted}}>LOADING</div>
+
+  useEffect(()=>{
+    supabase.auth.getSession().then(({data:{session}})=>setSession(session));
+    const {data:{subscription}}=supabase.auth.onAuthStateChange((_,s)=>setSession(s));
+    return ()=>subscription.unsubscribe();
+  },[]);
+
+  if(session===undefined) return (
+    <div style={{background:"#08090a",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:22,letterSpacing:5,color:"#454850"}}>LOADING</div>
     </div>
   );
+
+  if(!session) return <Auth/>;
+
   return (
-    <div style={{background:C.bg,minHeight:"100vh",color:C.text}}>
+    <div style={{background:"#08090a",minHeight:"100vh",color:"#e8e9eb"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-        body{background:${C.bg}!important;-webkit-font-smoothing:antialiased;}
+        body{background:#08090a!important;-webkit-font-smoothing:antialiased;}
         input{outline:none;} button{cursor:pointer;}
         @keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -608,14 +649,18 @@ export default function LockIn(){
         {page==="habits"&&<HabitsPage/>}
         {page==="gym"&&<GymPage/>}
       </div>
-      <div style={{position:"fixed",bottom:0,left:0,right:0,background:"rgba(8,9,10,0.96)",backdropFilter:"blur(12px)",borderTop:`1px solid ${C.border}`,padding:"10px 0 max(env(safe-area-inset-bottom),10px)",zIndex:100}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,background:"rgba(8,9,10,0.96)",backdropFilter:"blur(12px)",borderTop:"1px solid #1c1e22",padding:"10px 0 max(env(safe-area-inset-bottom),10px)",zIndex:100}}>
         <div style={{maxWidth:460,margin:"0 auto",display:"flex",justifyContent:"center",gap:8,padding:"0 16px"}}>
           {[{id:"habits",icon:"✓",label:"Habits"},{id:"gym",icon:"💪",label:"Gym"}].map(tab=>(
-            <button key={tab.id} onClick={()=>setPage(tab.id)} style={{flex:1,padding:"10px 0",background:page===tab.id?C.accentGlow:"transparent",border:`1px solid ${page===tab.id?C.accentDim:"transparent"}`,borderRadius:10,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",transition:"all .2s ease"}}>
+            <button key={tab.id} onClick={()=>setPage(tab.id)} style={{flex:1,padding:"10px 0",background:page===tab.id?"rgba(249,115,22,0.1)":"transparent",border:`1px solid ${page===tab.id?"#7c3010":"transparent"}`,borderRadius:10,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",transition:"all .2s ease"}}>
               <span style={{fontSize:18,lineHeight:1}}>{tab.icon}</span>
-              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,letterSpacing:1.5,color:page===tab.id?C.accent:C.muted,fontWeight:600}}>{tab.label.toUpperCase()}</span>
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,letterSpacing:1.5,color:page===tab.id?"#f97316":"#454850",fontWeight:600}}>{tab.label.toUpperCase()}</span>
             </button>
           ))}
+          <button onClick={()=>supabase.auth.signOut()} style={{flex:1,padding:"10px 0",background:"transparent",border:"1px solid transparent",borderRadius:10,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",transition:"all .2s ease"}} onMouseEnter={e=>e.currentTarget.querySelector("span:last-child").style.color="#ef4444"} onMouseLeave={e=>e.currentTarget.querySelector("span:last-child").style.color="#454850"}>
+            <span style={{fontSize:18,lineHeight:1}}>↩</span>
+            <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:12,letterSpacing:1.5,color:"#454850",fontWeight:600,transition:"color .2s"}}>LOG OUT</span>
+          </button>
         </div>
       </div>
     </div>
