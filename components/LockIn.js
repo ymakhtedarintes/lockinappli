@@ -808,7 +808,7 @@ function HabitsPage({userConfig}){
 export default function LockIn(){
   const [session,setSession]=useState(undefined);
   const [page,setPage]=useState("habits");
-  const [userConfig,setUserConfig]=useState(null);
+  const [userConfig,setUserConfig]=useState(undefined);
 
   useEffect(()=>{
     supabase.auth.getSession().then(({data:{session}})=>setSession(session));
@@ -817,11 +817,14 @@ export default function LockIn(){
   },[]);
 
   useEffect(()=>{
-    if(!session)return;
-    dbGet("userConfig").then(cfg=>setUserConfig(cfg||null));
+    if(!session){ return; }
+    dbGet("userConfig").then(cfg=>{
+      // cfg is null if never set — treat as new user needing onboarding
+      setUserConfig(cfg || {});
+    });
   },[session]);
 
-  if(session===undefined)return(
+  if(session===undefined || (session && userConfig===undefined))return(
     <div style={{background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:14,letterSpacing:6,color:C.accent,animation:"pulse 1.5s infinite"}}>INITIALIZING...</div>
       <style>{CSS}</style>
@@ -830,14 +833,7 @@ export default function LockIn(){
 
   if(!session)return<Auth/>;
 
-  if(session&&userConfig===null)return(
-    <div style={{background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <style>{CSS}</style>
-      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,letterSpacing:4,color:C.muted,animation:"pulse 1.5s infinite"}}>LOADING...</div>
-    </div>
-  );
-
-  if(session&&userConfig&&Object.keys(userConfig).length===0)return<Onboarding onComplete={cfg=>setUserConfig(cfg)}/>;
+  if(userConfig && Object.keys(userConfig).length===0)return<Onboarding onComplete={cfg=>setUserConfig(cfg)}/>;
 
   return(
     <div style={{background:C.bg,minHeight:"100vh",color:C.text}}>
