@@ -553,7 +553,7 @@ function WorkoutLogger({dayConfig,muscleTotals,setMuscleTotals,onBack}){
   const removeExercise=async(exId)=>{
     if(!workout)return;
     const ex=workout.exercises.find(e=>e.id===exId);
-    if(ex){ const t={...muscleTotals}; ex.sets.forEach(()=>ex.muscleGroups.forEach(mg=>{ t[mg]=Math.max(0,(t[mg]||0)-1); }); setMuscleTotals(t); await dbSet("muscleTotals",t); }
+    if(ex){ const t={...muscleTotals}; ex.sets.forEach(()=>ex.muscleGroups.forEach(mg=>{ t[mg]=Math.max(0,(t[mg]||0)-1); })); setMuscleTotals(t); await dbSet("muscleTotals",t); }
     await saveW({...workout,exercises:workout.exercises.filter(e=>e.id!==exId)});
   };
   const addSet=async(exId,reps,weight)=>{
