@@ -80,26 +80,30 @@ const ALL_MUSCLES = ["chest","back","biceps","triceps","shoulders","legs","abs"]
 const MUSCLE_LABELS = {chest:"Chest",back:"Back",biceps:"Biceps",triceps:"Triceps",shoulders:"Shoulders",legs:"Legs",abs:"Abs"};
 
 const ALL_HABITS = [
-  {id:"pushups",    label:"Pushups",            cat:"FITNESS"},
-  {id:"pullups",    label:"Pullups",             cat:"FITNESS"},
-  {id:"run",        label:"Go for a run",        cat:"FITNESS"},
-  {id:"walk",       label:"Walk 10k steps",      cat:"FITNESS"},
-  {id:"stretch",    label:"Stretch / mobility",  cat:"FITNESS"},
-  {id:"cold",       label:"Cold shower",         cat:"FITNESS"},
-  {id:"read",       label:"Read 15 min",         cat:"MIND"},
-  {id:"meditate",   label:"Meditate",            cat:"MIND"},
-  {id:"journal",    label:"Journal",             cat:"MIND"},
-  {id:"nophone",    label:"No phone after 10pm", cat:"MIND"},
-  {id:"gratitude",  label:"Gratitude practice",  cat:"MIND"},
-  {id:"study",      label:"Study 1 hr",          cat:"SCHOOL"},
-  {id:"hw",         label:"Homework 1 hr",       cat:"SCHOOL"},
-  {id:"projects",   label:"Projects 1 hr",       cat:"SCHOOL"},
-  {id:"water",      label:"Drink 2L water",      cat:"HEALTH"},
-  {id:"nojunk",     label:"No junk food",        cat:"HEALTH"},
-  {id:"noalcohol",  label:"No alcohol",          cat:"HEALTH"},
-  {id:"vitamins",   label:"Take vitamins",       cat:"HEALTH"},
-  {id:"sleep",      label:"Sleep by 11pm",       cat:"HEALTH"},
-  {id:"wakeup",     label:"Wake up before 7am",  cat:"HEALTH"},
+  {id:"pushups",   label:"Pushups",              cat:"FITNESS"},
+  {id:"pullups",   label:"Pullups",              cat:"FITNESS"},
+  {id:"run",       label:"Go for a run",         cat:"FITNESS"},
+  {id:"steps",     label:"Hit 10,000 steps",     cat:"FITNESS"},
+  {id:"stretch",   label:"Stretch / mobility",   cat:"FITNESS"},
+  {id:"workout",   label:"Complete a workout",   cat:"FITNESS"},
+  {id:"read",      label:"Read 30 min",          cat:"MIND"},
+  {id:"meditate",  label:"Meditate 10 min",      cat:"MIND"},
+  {id:"journal",   label:"Write in journal",     cat:"MIND"},
+  {id:"learn",     label:"Learn something new",  cat:"MIND"},
+  {id:"nosocial",  label:"No social media",      cat:"MIND"},
+  {id:"study",     label:"Study 1 hr",           cat:"WORK"},
+  {id:"hw",        label:"Homework 1 hr",        cat:"WORK"},
+  {id:"projects",  label:"Side project 1 hr",    cat:"WORK"},
+  {id:"deepwork",  label:"Deep work session",    cat:"WORK"},
+  {id:"water",     label:"Drink 2L water",       cat:"HEALTH"},
+  {id:"eatclean",  label:"Eat clean all day",    cat:"HEALTH"},
+  {id:"nojunk",    label:"No junk food",         cat:"HEALTH"},
+  {id:"vitamins",  label:"Take vitamins",        cat:"HEALTH"},
+  {id:"noalcohol", label:"No alcohol",           cat:"HEALTH"},
+  {id:"outside",   label:"Go outside",           cat:"DAILY"},
+  {id:"tidy",      label:"Tidy your space",      cat:"DAILY"},
+  {id:"cook",      label:"Cook at home",         cat:"DAILY"},
+  {id:"connect",   label:"Connect with someone", cat:"DAILY"},
 ];
 
 const DEFAULT_HABITS = ["pushups","pullups","read","study","hw","projects"];
@@ -398,49 +402,92 @@ function CalendarModal({habitId,habitLabel,onClose}){
 /* ══════════ BODY MAP ═══════════════════════════════════════════════════════ */
 function BodyMapSVG({progress,view}){
   const mc=m=>muscleColor(progress[m]||0);
-  const base=C.faint,ol=C.borderHi;
-  const Sil=()=>(
+  const base="#0d1825",ol="#1e3048",div="#243855",T="fill .5s ease";
+  // shared silhouette paths (same base body for front+back)
+  const Silhouette=()=>(
     <>
-      <circle cx={80} cy={22} r={17} fill={base} stroke={ol} strokeWidth={1}/>
-      <rect x={73} y={38} width={14} height={14} rx={4} fill={base} stroke={ol} strokeWidth={1}/>
-      <path d="M44,52 C32,54 26,68 26,80 L26,162 C26,168 32,172 40,172 L120,172 C128,172 134,168 134,162 L134,80 C134,68 128,54 116,52 Z" fill={base} stroke={ol} strokeWidth={1}/>
-      <rect x={18} y={68} width={18} height={62} rx={9} fill={base} stroke={ol} strokeWidth={1}/>
-      <rect x={124} y={68} width={18} height={62} rx={9} fill={base} stroke={ol} strokeWidth={1}/>
-      <rect x={16} y={134} width={16} height={44} rx={8} fill={base} stroke={ol} strokeWidth={1}/>
-      <rect x={128} y={134} width={16} height={44} rx={8} fill={base} stroke={ol} strokeWidth={1}/>
-      <rect x={44} y={170} width={72} height={18} rx={4} fill={base} stroke={ol} strokeWidth={1}/>
-      <rect x={44} y={186} width={30} height={70} rx={15} fill={base} stroke={ol} strokeWidth={1}/>
-      <rect x={86} y={186} width={30} height={70} rx={15} fill={base} stroke={ol} strokeWidth={1}/>
-      <rect x={47} y={260} width={24} height={50} rx={12} fill={base} stroke={ol} strokeWidth={1}/>
-      <rect x={89} y={260} width={24} height={50} rx={12} fill={base} stroke={ol} strokeWidth={1}/>
+      <circle cx={80} cy={20} r={16} fill={base} stroke={ol} strokeWidth={1.2}/>
+      <path d="M72,34 Q80,39 88,34 L91,52 Q80,56 69,52 Z" fill={base} stroke={ol} strokeWidth={1}/>
+      <path d="M50,52 C36,56 22,66 18,80 L18,134 C18,142 22,146 26,146 L26,180 C26,186 30,189 34,188 L44,174 C40,160 42,152 44,148 L48,172 L52,188 C56,194 62,196 66,196 L66,170 L72,170 L72,196 C76,198 80,198 80,198 C80,198 84,198 88,196 L88,170 L94,170 L94,196 C98,196 104,194 108,188 L112,172 L116,148 C118,152 120,160 116,174 L126,188 C130,189 134,186 134,180 L134,146 C138,146 142,142 142,134 L142,80 C138,66 124,56 110,52 Z" fill={base} stroke={ol} strokeWidth={1}/>
+      <path d="M18,80 C12,86 10,104 12,122 C14,132 20,136 26,134 L30,82 Z" fill={base} stroke={ol} strokeWidth={1}/>
+      <path d="M142,80 C148,86 150,104 148,122 C146,132 140,136 134,134 L130,82 Z" fill={base} stroke={ol} strokeWidth={1}/>
+      <path d="M12,124 C8,136 8,158 12,172 C16,180 24,182 30,178 L30,130 Z" fill={base} stroke={ol} strokeWidth={1}/>
+      <path d="M148,124 C152,136 152,158 148,172 C144,180 136,182 130,178 L130,130 Z" fill={base} stroke={ol} strokeWidth={1}/>
+      <path d="M52,188 C46,194 44,206 48,212 L112,212 C116,206 114,194 108,188 Z" fill={base} stroke={ol} strokeWidth={1}/>
+      <path d="M48,212 C42,224 40,254 44,276 C48,286 58,290 66,286 C74,280 76,258 72,232 L70,212 Z" fill={base} stroke={ol} strokeWidth={1}/>
+      <path d="M112,212 C118,224 120,254 116,276 C112,286 102,290 94,286 C86,280 84,258 88,232 L90,212 Z" fill={base} stroke={ol} strokeWidth={1}/>
+      <path d="M44,278 C40,290 40,312 46,318 C50,322 58,322 62,318 C66,314 66,294 60,280 Z" fill={base} stroke={ol} strokeWidth={1}/>
+      <path d="M116,278 C120,290 120,312 114,318 C110,322 102,322 98,318 C94,314 94,294 100,280 Z" fill={base} stroke={ol} strokeWidth={1}/>
     </>
   );
   if(view==="front")return(
-    <svg viewBox="0 0 160 318" style={{width:"100%",height:"100%",filter:"drop-shadow(0 4px 12px rgba(0,0,0,.5))"}}>
-      <Sil/>
-      <ellipse cx={38} cy={76} rx={16} ry={15} fill={mc("shoulders")} style={{transition:"fill .5s"}}/>
-      <ellipse cx={122} cy={76} rx={16} ry={15} fill={mc("shoulders")} style={{transition:"fill .5s"}}/>
-      <ellipse cx={64} cy={90} rx={18} ry={19} fill={mc("chest")} style={{transition:"fill .5s"}}/>
-      <ellipse cx={96} cy={90} rx={18} ry={19} fill={mc("chest")} style={{transition:"fill .5s"}}/>
-      <rect x={20} y={86} width={16} height={32} rx={8} fill={mc("biceps")} style={{transition:"fill .5s"}}/>
-      <rect x={124} y={86} width={16} height={32} rx={8} fill={mc("biceps")} style={{transition:"fill .5s"}}/>
-      {[0,1,2].map(row=>[0,1].map(col=>(<rect key={`${row}-${col}`} x={63+col*18} y={114+row*19} width={14} height={15} rx={4} fill={mc("abs")} style={{transition:"fill .5s"}}/>)))}
-      <rect x={46} y={190} width={26} height={60} rx={13} fill={mc("legs")} style={{transition:"fill .5s"}}/>
-      <rect x={88} y={190} width={26} height={60} rx={13} fill={mc("legs")} style={{transition:"fill .5s"}}/>
+    <svg viewBox="0 0 160 325" style={{width:"100%",height:"100%",filter:"drop-shadow(0 4px 16px rgba(0,0,0,.7))"}}>
+      <Silhouette/>
+      {/* Left delt */}
+      <path d="M20,80 C14,86 12,98 16,108 C20,116 30,116 36,108 C40,102 40,88 36,82 Z" fill={mc("shoulders")} style={{transition:T}}/>
+      {/* Right delt */}
+      <path d="M140,80 C146,86 148,98 144,108 C140,116 130,116 124,108 C120,102 120,88 124,82 Z" fill={mc("shoulders")} style={{transition:T}}/>
+      {/* Left pec */}
+      <path d="M50,58 C38,64 34,80 38,94 C42,104 54,108 66,102 C74,97 77,86 74,76 L72,58 Z" fill={mc("chest")} style={{transition:T}}/>
+      {/* Right pec */}
+      <path d="M110,58 C122,64 126,80 122,94 C118,104 106,108 94,102 C86,97 83,86 86,76 L88,58 Z" fill={mc("chest")} style={{transition:T}}/>
+      <line x1={80} y1={58} x2={80} y2={104} stroke={div} strokeWidth={1.5}/>
+      {/* Left bicep */}
+      <path d="M12,88 C8,98 8,116 12,126 C16,134 24,136 30,130 C36,124 36,108 32,96 Z" fill={mc("biceps")} style={{transition:T}}/>
+      {/* Right bicep */}
+      <path d="M148,88 C152,98 152,116 148,126 C144,134 136,136 130,130 C124,124 124,108 128,96 Z" fill={mc("biceps")} style={{transition:T}}/>
+      {/* Abs - 6 pack */}
+      <rect x={61} y={106} width={15} height={14} rx={5} fill={mc("abs")} style={{transition:T}}/>
+      <rect x={61} y={123} width={15} height={14} rx={5} fill={mc("abs")} style={{transition:T}}/>
+      <rect x={61} y={140} width={15} height={13} rx={5} fill={mc("abs")} style={{transition:T}}/>
+      <rect x={84} y={106} width={15} height={14} rx={5} fill={mc("abs")} style={{transition:T}}/>
+      <rect x={84} y={123} width={15} height={14} rx={5} fill={mc("abs")} style={{transition:T}}/>
+      <rect x={84} y={140} width={15} height={13} rx={5} fill={mc("abs")} style={{transition:T}}/>
+      <line x1={80} y1={106} x2={80} y2={156} stroke={div} strokeWidth={1.5}/>
+      {/* Obliques */}
+      <path d="M44,108 C40,120 40,142 46,156 C50,162 58,160 62,152 L58,108 Z" fill={mc("abs")} style={{transition:T}}/>
+      <path d="M116,108 C120,120 120,142 114,156 C110,162 102,160 98,152 L102,108 Z" fill={mc("abs")} style={{transition:T}}/>
+      {/* Left quad */}
+      <path d="M50,214 C44,228 42,258 46,278 C50,288 62,292 70,286 C76,280 76,256 72,232 Z" fill={mc("legs")} style={{transition:T}}/>
+      {/* Right quad */}
+      <path d="M110,214 C116,228 118,258 114,278 C110,288 98,292 90,286 C84,280 84,256 88,232 Z" fill={mc("legs")} style={{transition:T}}/>
+      {/* Kneecaps */}
+      <ellipse cx={57} cy={282} rx={9} ry={7} fill={base} stroke={ol} strokeWidth={1}/>
+      <ellipse cx={103} cy={282} rx={9} ry={7} fill={base} stroke={ol} strokeWidth={1}/>
+      {/* Calves */}
+      <path d="M42,288 C38,300 40,314 46,320 C50,324 58,324 62,320 C66,316 64,298 58,286 Z" fill={mc("legs")} style={{transition:T}}/>
+      <path d="M118,288 C122,300 120,314 114,320 C110,324 102,324 98,320 C94,316 96,298 102,286 Z" fill={mc("legs")} style={{transition:T}}/>
     </svg>
   );
   return(
-    <svg viewBox="0 0 160 318" style={{width:"100%",height:"100%",filter:"drop-shadow(0 4px 12px rgba(0,0,0,.5))"}}>
-      <Sil/>
-      <path d="M74,50 L86,50 L120,68 L80,80 L40,68 Z" fill={mc("back")} style={{transition:"fill .5s"}}/>
-      <path d="M42,72 C30,82 26,105 28,130 L44,138 L44,90 Z" fill={mc("back")} style={{transition:"fill .5s"}}/>
-      <path d="M118,72 C130,82 134,105 132,130 L116,138 L116,90 Z" fill={mc("back")} style={{transition:"fill .5s"}}/>
-      <rect x={20} y={86} width={16} height={32} rx={8} fill={mc("triceps")} style={{transition:"fill .5s"}}/>
-      <rect x={124} y={86} width={16} height={32} rx={8} fill={mc("triceps")} style={{transition:"fill .5s"}}/>
-      <ellipse cx={59} cy={184} rx={14} ry={12} fill={mc("legs")} style={{transition:"fill .5s"}}/>
-      <ellipse cx={101} cy={184} rx={14} ry={12} fill={mc("legs")} style={{transition:"fill .5s"}}/>
-      <rect x={46} y={196} width={26} height={58} rx={13} fill={mc("legs")} style={{transition:"fill .5s"}}/>
-      <rect x={88} y={196} width={26} height={58} rx={13} fill={mc("legs")} style={{transition:"fill .5s"}}/>
+    <svg viewBox="0 0 160 325" style={{width:"100%",height:"100%",filter:"drop-shadow(0 4px 16px rgba(0,0,0,.7))"}}>
+      <Silhouette/>
+      {/* Trapezius */}
+      <path d="M80,52 C98,56 114,64 120,76 L114,112 Q80,120 46,112 L40,76 C46,64 62,56 80,52 Z" fill={mc("back")} style={{transition:T}}/>
+      {/* Left lat */}
+      <path d="M36,80 C26,94 22,118 24,140 C26,150 36,154 44,148 L46,86 Z" fill={mc("back")} style={{transition:T}}/>
+      {/* Right lat */}
+      <path d="M124,80 C134,94 138,118 136,140 C134,150 124,154 116,148 L114,86 Z" fill={mc("back")} style={{transition:T}}/>
+      <line x1={80} y1={52} x2={80} y2={158} stroke={div} strokeWidth={1.5}/>
+      {/* Erector spinae */}
+      <rect x={66} y={122} width={11} height={36} rx={4} fill={mc("back")} style={{transition:T}}/>
+      <rect x={83} y={122} width={11} height={36} rx={4} fill={mc("back")} style={{transition:T}}/>
+      {/* Rear delts */}
+      <path d="M20,78 C14,86 12,96 18,104 C22,110 32,110 38,102 C42,94 40,82 36,78 Z" fill={mc("shoulders")} style={{transition:T}}/>
+      <path d="M140,78 C146,86 148,96 142,104 C138,110 128,110 122,102 C118,94 120,82 124,78 Z" fill={mc("shoulders")} style={{transition:T}}/>
+      {/* Triceps */}
+      <path d="M12,88 C8,100 8,118 12,130 C16,138 26,138 30,130 C34,122 34,106 30,94 Z" fill={mc("triceps")} style={{transition:T}}/>
+      <path d="M148,88 C152,100 152,118 148,130 C144,138 134,138 130,130 C126,122 126,106 130,94 Z" fill={mc("triceps")} style={{transition:T}}/>
+      {/* Glutes */}
+      <path d="M46,192 C40,204 40,224 48,234 C54,240 66,240 72,232 C78,222 76,204 68,194 Z" fill={mc("legs")} style={{transition:T}}/>
+      <path d="M114,192 C120,204 120,224 112,234 C106,240 94,240 88,232 C82,222 84,204 92,194 Z" fill={mc("legs")} style={{transition:T}}/>
+      <line x1={80} y1={192} x2={80} y2={238} stroke={div} strokeWidth={1.5}/>
+      {/* Hamstrings */}
+      <path d="M46,238 C40,252 40,274 46,284 C52,292 62,292 68,284 C74,274 72,252 66,240 Z" fill={mc("legs")} style={{transition:T}}/>
+      <path d="M114,238 C120,252 120,274 114,284 C108,292 98,292 92,284 C86,274 88,252 94,240 Z" fill={mc("legs")} style={{transition:T}}/>
+      {/* Calves back */}
+      <path d="M44,288 C40,300 42,316 48,322 C52,326 60,326 64,322 C68,316 66,298 60,286 Z" fill={mc("legs")} style={{transition:T}}/>
+      <path d="M116,288 C120,300 118,316 112,322 C108,326 100,326 96,322 C92,316 94,298 100,286 Z" fill={mc("legs")} style={{transition:T}}/>
     </svg>
   );
 }
@@ -504,11 +551,12 @@ function SplitEditor({split,onSave,onClose}){
           <button onClick={onClose} className="btn-press" style={{background:"transparent",border:"none",color:C.muted,fontSize:24,lineHeight:1}}>×</button>
         </div>
         <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:C.muted,letterSpacing:1.5,marginBottom:8}}>LOAD PRESET</div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:20}}>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>
           {Object.entries(SPLIT_PRESETS).map(([key,preset])=>(
             <button key={key} onClick={()=>applyPreset(key)} className="btn-press" style={{background:C.faint,border:`1px solid ${C.borderHi}`,borderRadius:7,padding:"6px 12px",fontFamily:"'Outfit',sans-serif",fontSize:13,fontWeight:600,color:C.text,cursor:"pointer",transition:"all .2s"}} onMouseEnter={e=>{e.target.style.borderColor=C.accent;e.target.style.color=C.accent;}} onMouseLeave={e=>{e.target.style.borderColor=C.borderHi;e.target.style.color=C.text;}}>{preset.label}</button>
           ))}
         </div>
+        <button onClick={()=>setDays([])} className="btn-press" style={{width:"100%",padding:"9px",background:"transparent",border:`1px dashed ${C.accent}66`,borderRadius:8,color:C.accent,fontFamily:"'Outfit',sans-serif",fontSize:13,fontWeight:700,letterSpacing:1.5,cursor:"pointer",marginBottom:20,transition:"all .2s"}} onMouseEnter={e=>{e.currentTarget.style.background=`${C.accent}0f`;}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>✦ BUILD CUSTOM FROM SCRATCH</button>
         <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:C.muted,letterSpacing:1.5,marginBottom:8}}>YOUR DAYS ({days.length})</div>
         {days.map((day,idx)=>(
           <div key={day.id} style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",marginBottom:10}}>
