@@ -1514,8 +1514,16 @@ export default function LockIn(){
   const tabs=[
     {id:"habits",icon:"✓",label:"Habits"},
     ...(userConfig?.useGym!==false?[{id:"gym",icon:"💪",label:"Gym"}]:[]),
+    {id:"nutrition",icon:"🍽️",label:"Food"}, // <-- ADD THIS LINE
     {id:"settings",icon:"⚙",label:"Settings"},
   ];
+
+      <div style={{maxWidth:480,margin:"0 auto",padding:"24px 16px 100px"}}>
+        {page==="habits"&&<HabitsPage userConfig={userConfig}/>}
+        {page==="gym"&&userConfig?.useGym!==false&&<GymPage userConfig={userConfig} onUpdateConfig={setUserConfig}/>}
+        {page==="nutrition"&&<NutritionPage />}   {/* <-- ADD THIS LINE */}
+        {page==="settings"&&<SettingsPage userConfig={userConfig} onUpdateConfig={setUserConfig} userEmail={userEmail}/>}
+      </div>
 
   return(
     <div style={{background:C.bg,minHeight:"100vh",color:C.text}}>
