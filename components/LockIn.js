@@ -167,6 +167,10 @@ const CSS = `
   @keyframes popIn{0%{opacity:0;transform:scale(.86)}65%{transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
   @keyframes glow{0%,100%{box-shadow:0 0 20px rgba(0,240,255,0.2)}50%{box-shadow:0 0 40px rgba(0,240,255,0.5)}}
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0, 240, 255, 0.8); }
 `;
 
 function SectionLabel({children,action}){
@@ -612,11 +616,12 @@ const handleSearch = async (e) => {
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
-    
+    setSearchResults([]);
+  
     const API_KEY = process.env.NEXT_PUBLIC_USDA_API_KEY || "DEMO_KEY"; 
     
     // REMOVED the strict dataType filter. It now searches Foundation, SR Legacy, AND Branded foods.
-    const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${encodeURIComponent(searchQuery)}&pageSize=20`;
+    const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${encodeURIComponent(searchQuery)}&pageSize=90`;
 
     try {
       const response = await fetch(url);
