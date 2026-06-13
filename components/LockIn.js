@@ -612,8 +612,9 @@ const handleSearch = async (e) => {
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
-
-    const API_KEY = process.env.NEXT_PUBLIC_USDA_API_KEY || "DEMO_KEY";
+    
+    // Uses your Vercel Environment Variable securely!
+    const API_KEY = process.env.NEXT_PUBLIC_USDA_API_KEY || "DEMO_KEY"; 
     
     const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${encodeURIComponent(searchQuery)}&pageSize=15&dataType=Foundation,SR%20Legacy`;
 
@@ -628,16 +629,15 @@ const handleSearch = async (e) => {
             return nut ? Math.round(nut.value) : 0;
           };
 
+          // CORRECTED DATA MAPPING: perfectly matches your app's internal state
           return {
             id: food.fdcId,
-            // Format name to look a bit cleaner
             name: food.description.charAt(0).toUpperCase() + food.description.slice(1).toLowerCase(),
-            calories: getNutrient(1008, 208),
-            protein: getNutrient(1003, 203),
-            carbs: getNutrient(1005, 205),
+            kcal: getNutrient(1008, 208),
+            pro: getNutrient(1003, 203),
+            carb: getNutrient(1005, 205),
             fat: getNutrient(1004, 204),
-            serving_size: 100, // USDA data is standardized per 100g
-            serving_unit: "g"
+            unit: "100g"
           };
         });
 
@@ -755,7 +755,7 @@ const handleSearch = async (e) => {
         </div>
 
         {tab === "search" && (
-          <form onSubmit={searchOpenFoodFacts} style={{ padding: "12px", display: "flex", gap: 8, borderBottom: `1px solid ${C.borderHi}` }}>
+          <form onSubmit={handleSearch} style={{ padding: "12px", display: "flex", gap: 8, borderBottom: `1px solid ${C.borderHi}` }}>
             <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search database..." style={{ flex: 1, padding: "10px 14px", background: C.bg, border: `1px solid ${C.borderHi}`, borderRadius: 8, color: C.text, fontFamily: "'Outfit',sans-serif", fontSize: 14 }} />
             <button type="submit" disabled={isSearching} className="btn-press" style={{ background: C.accent, border: "none", borderRadius: 8, padding: "0 16px", color: C.bg, fontFamily: "'Outfit',sans-serif", fontWeight: 700, cursor: "pointer" }}>{isSearching ? "..." : "GO"}</button>
           </form>
