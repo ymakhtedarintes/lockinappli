@@ -1518,19 +1518,13 @@ export default function LockIn(){
     {id:"settings",icon:"⚙",label:"Settings"},
   ];
 
-      <div style={{maxWidth:480,margin:"0 auto",padding:"24px 16px 100px"}}>
-        {page==="habits"&&<HabitsPage userConfig={userConfig}/>}
-        {page==="gym"&&userConfig?.useGym!==false&&<GymPage userConfig={userConfig} onUpdateConfig={setUserConfig}/>}
-        {page==="nutrition"&&<NutritionPage />}   {/* <-- ADD THIS LINE */}
-        {page==="settings"&&<SettingsPage userConfig={userConfig} onUpdateConfig={setUserConfig} userEmail={userEmail}/>}
-      </div>
-
-  return(
+return(
     <div style={{background:C.bg,minHeight:"100vh",color:C.text}}>
       <style>{CSS}</style>
       <div style={{maxWidth:480,margin:"0 auto",padding:"24px 16px 100px"}}>
         {page==="habits"&&<HabitsPage userConfig={userConfig}/>}
         {page==="gym"&&userConfig?.useGym!==false&&<GymPage userConfig={userConfig} onUpdateConfig={setUserConfig}/>}
+        {page==="nutrition"&&<NutritionPage />}   {/* <-- NOW IT IS INSIDE THE RETURN */}
         {page==="settings"&&<SettingsPage userConfig={userConfig} onUpdateConfig={setUserConfig} userEmail={userEmail}/>}
       </div>
       <div style={{position:"fixed",bottom:0,left:0,right:0,background:"rgba(5,11,20,0.88)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",borderTop:`1px solid ${C.border}`,padding:"12px 0 max(env(safe-area-inset-bottom),12px)",zIndex:100}}>
