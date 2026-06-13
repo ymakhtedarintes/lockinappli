@@ -577,6 +577,214 @@ function SplitEditor({split,onSave,onClose}){
   );
 }
 
+/* ══════════ NUTRITION PAGE ═════════════════════════════════════════════════ */
+function NutritionPage() {
+  const [date, setDate] = useState(todayKey());
+  const [log, setLog] = useState([]);
+  const [goals, setGoals] = useState({ kcal: 2500, pro: 150, carb: 300, fat: 80 });
+  
+  const [tab, setTab] = useState("common"); // "common" | "search"
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [activeItem, setActiveItem] = useState(null);
+  const [amountInput, setAmountInput] = useState("");
+  const [ready, setReady] = useState(false);
+
+  // Load data for selected date
+  useEffect(() => {
+    (async () => {
+      setReady(false);
+      const data = await dbGet("nutrition:" + date);
+      setLog(data?.log || []);
+      if (data?.goals) setGoals(data.goals);
+      setReady(true);
+    })();
+  }, [date]);
+
+  const saveLog = async (newLog) => {
+    setLog(newLog);
+    await dbSet("nutrition:" + date, { log: newLog, goals });
+  };
+
+  const searchOpenFoodFacts = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    setIsSearching(true);
+    try {
+      const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(searchQuery)}&search_simple=1&action=process&json=1&page_size=20`);
+      const data = await res.json();
+      const parsed = data.products.map(p => ({
+        id: p.code,
+        name: (p.product_name || 'Unknown') + (p.brands ? ` (${p.brands})` : ''),
+        kcal: p.nutriments?.['energy-kcal_100g'] || 0,
+        pro: p.nutriments?.proteins_100g || 0,
+        carb: p.nutriments?.carbohydrates_100g || 0,
+        fat: p.nutriments?.fat_100g || 0,
+        unit: "100g"
+      })).filter(p => p.name !== 'Unknown' && p.kcal > 0);
+      setSearchResults(parsed);
+    } catch(err) { console.error(err); }
+    setIsSearching(false);
+  };
+
+  const addItemToLog = (item) => {
+    const qty = parseFloat(amountInput) || 0;
+    if (qty <= 0) return;
+    
+    // Calculate multiplier based on unit
+    const multiplier = item.unit.includes("100") ? qty / 100 : qty;
+    
+    const entry = {
+      entryId: uid(),
+      id: item.id,
+      name: item.name,
+      amount: qty,
+      unitStr: item.unit.includes("100") ? "g/ml" : item.unit.replace("1 ", ""),
+      kcal: Math.round(item.kcal * multiplier),
+      pro: Math.round(item.pro * multiplier * 10) / 10,
+      carb: Math.round(item.carb * multiplier * 10) / 10,
+      fat: Math.round(item.fat * multiplier * 10) / 10
+    };
+    
+    saveLog([...log, entry]);
+    setActiveItem(null);
+    setAmountInput("");
+  };
+
+  const removeEntry = (entryId) => saveLog(log.filter(e => e.entryId !== entryId));
+  
+  const shiftDate = (days) => {
+    const d = new Date(date + "T00:00:00");
+    d.setDate(d.getDate() + days);
+    setDate(d.toISOString().slice(0,10));
+  };
+
+  const tKcal = log.reduce((acc, i) => acc + i.kcal, 0);
+  const tPro = log.reduce((acc, i) => acc + i.pro, 0);
+  const tCarb = log.reduce((acc, i) => acc + i.carb, 0);
+  const tFat = log.reduce((acc, i) => acc + i.fat, 0);
+
+  const MacroBar = ({ label, current, max, color }) => {
+    const pct = Math.min(100, (current / max) * 100) || 0;
+    return (
+      <div style={{ flex: 1 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4, fontFamily: "'JetBrains Mono',monospace", fontSize: 10 }}>
+          <span style={{ color: C.muted }}>{label}</span>
+          <span style={{ color: C.text }}>{Math.round(current)}<span style={{ color: C.muted }}>/{max}g</span></span>
+        </div>
+        <div style={{ height: 6, background: C.faint, borderRadius: 3, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${pct}%`, background: color, transition: "width .4s ease" }} />
+        </div>
+      </div>
+    );
+  };
+
+  if (!ready) return <div style={{ textAlign: "center", padding: 40, fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: C.muted, animation: "pulse 1.5s infinite" }}>LOADING NUTRITION...</div>;
+
+  return (
+    <div style={{ animation: "slideIn .4s ease" }}>
+      {/* Header & Date */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+        <div>
+          <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 36, fontWeight: 700, lineHeight: .88, letterSpacing: 2, color: C.accent, textShadow: `0 0 16px ${C.accentGlow}` }}>MACROS</div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", background: C.surface, borderRadius: 8, border: `1px solid ${C.border}` }}>
+          <button onClick={() => shiftDate(-1)} style={{ background: "none", border: "none", color: C.muted, padding: "8px 12px", cursor: "pointer" }}>‹</button>
+          <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: C.text, width: 80, textAlign: "center" }}>
+            {date === todayKey() ? "TODAY" : date.slice(5).replace("-", "/")}
+          </div>
+          <button onClick={() => shiftDate(1)} style={{ background: "none", border: "none", color: C.muted, padding: "8px 12px", cursor: "pointer" }}>›</button>
+        </div>
+      </div>
+
+      {/* Dashboard */}
+      <Card style={{ marginBottom: 24 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 16 }}>
+          <div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: C.accent, letterSpacing: 1.5, marginBottom: 4 }}>CALORIES</div>
+            <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 42, fontWeight: 700, lineHeight: 1, color: C.text }}>
+              {tKcal} <span style={{ fontSize: 16, color: C.muted, fontWeight: 500 }}>/ {goals.kcal}</span>
+            </div>
+          </div>
+          <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: C.muted, textAlign: "right" }}>
+            {Math.max(0, goals.kcal - tKcal)} LEFT
+          </div>
+        </div>
+        <div style={{ height: 8, background: C.faint, borderRadius: 4, overflow: "hidden", marginBottom: 20 }}>
+          <div style={{ height: "100%", width: `${Math.min(100, (tKcal/goals.kcal)*100)}%`, background: C.accent, transition: "width .4s ease" }} />
+        </div>
+        <div style={{ display: "flex", gap: 12 }}>
+          <MacroBar label="PRO" current={tPro} max={goals.pro} color={C.danger} />
+          <MacroBar label="CARB" current={tCarb} max={goals.carb} color={C.green} />
+          <MacroBar label="FAT" current={tFat} max={goals.fat} color="#fb923c" />
+        </div>
+      </Card>
+
+      {/* Add Food Section */}
+      <SectionLabel>Log Food</SectionLabel>
+      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden", marginBottom: 24 }}>
+        <div style={{ display: "flex", borderBottom: `1px solid ${C.border}` }}>
+          <button onClick={() => setTab("common")} style={{ flex: 1, padding: "12px", background: tab === "common" ? `${C.accent}11` : "transparent", border: "none", borderBottom: tab === "common" ? `2px solid ${C.accent}` : "2px solid transparent", color: tab === "common" ? C.accent : C.muted, fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all .2s" }}>COMMON</button>
+          <button onClick={() => setTab("search")} style={{ flex: 1, padding: "12px", background: tab === "search" ? `${C.accent}11` : "transparent", border: "none", borderBottom: tab === "search" ? `2px solid ${C.accent}` : "2px solid transparent", color: tab === "search" ? C.accent : C.muted, fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all .2s" }}>SEARCH DB</button>
+        </div>
+
+        {tab === "search" && (
+          <form onSubmit={searchOpenFoodFacts} style={{ padding: "12px", display: "flex", gap: 8, borderBottom: `1px solid ${C.borderHi}` }}>
+            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search database..." style={{ flex: 1, padding: "10px 14px", background: C.bg, border: `1px solid ${C.borderHi}`, borderRadius: 8, color: C.text, fontFamily: "'Outfit',sans-serif", fontSize: 14 }} />
+            <button type="submit" disabled={isSearching} className="btn-press" style={{ background: C.accent, border: "none", borderRadius: 8, padding: "0 16px", color: C.bg, fontFamily: "'Outfit',sans-serif", fontWeight: 700, cursor: "pointer" }}>{isSearching ? "..." : "GO"}</button>
+          </form>
+        )}
+
+        <div style={{ maxHeight: 280, overflowY: "auto" }}>
+          {(tab === "common" ? COMMON_FOODS : searchResults).map((item, i) => (
+            <div key={item.id + i} style={{ borderBottom: `1px solid ${C.border}`, background: activeItem?.id === item.id ? `${C.accent}0a` : "transparent" }}>
+              <div onClick={() => setActiveItem(activeItem?.id === item.id ? null : item)} style={{ padding: "12px 14px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 15, fontWeight: 500, color: C.text, marginBottom: 2 }}>{item.name}</div>
+                  <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: C.muted }}>
+                    {item.kcal} kcal · {item.pro}g P · {item.carb}g C · {item.fat}g F <span style={{ opacity: 0.5 }}>(per {item.unit})</span>
+                  </div>
+                </div>
+                <div style={{ color: C.accent, fontSize: 18 }}>{activeItem?.id === item.id ? "▾" : "+"}</div>
+              </div>
+              {activeItem?.id === item.id && (
+                <div style={{ padding: "0 14px 14px", display: "flex", gap: 8, animation: "slideIn .2s ease" }}>
+                  <input autoFocus value={amountInput} onChange={e => setAmountInput(e.target.value)} onKeyDown={e => e.key === "Enter" && addItemToLog(item)} placeholder={`Amount (${item.unit.includes("100") ? "grams/ml" : "units"})`} type="number" style={{ flex: 1, padding: "10px 12px", background: C.bg, border: `1px solid ${C.accent}`, borderRadius: 8, color: C.text, fontFamily: "'JetBrains Mono',monospace", fontSize: 13 }} />
+                  <button onClick={() => addItemToLog(item)} className="btn-press" style={{ background: C.accent, border: "none", borderRadius: 8, padding: "0 20px", color: C.bg, fontFamily: "'Outfit',sans-serif", fontWeight: 700, cursor: "pointer" }}>ADD</button>
+                </div>
+              )}
+            </div>
+          ))}
+          {tab === "search" && searchResults.length === 0 && !isSearching && (
+            <div style={{ padding: 24, textAlign: "center", fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: C.muted }}>SEARCH TO FIND FOODS</div>
+          )}
+        </div>
+      </div>
+
+      {/* Today's Log */}
+      <SectionLabel>Consumed</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {log.length === 0 ? (
+          <div style={{ padding: 24, textAlign: "center", fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: C.muted, border: `1px dashed ${C.borderHi}`, borderRadius: 12 }}>NO FOOD LOGGED YET</div>
+        ) : log.map((entry) => (
+          <div key={entry.entryId} style={{ padding: "12px 14px", background: C.surface, border: `1px solid ${C.borderHi}`, borderRadius: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 15, fontWeight: 600, color: C.text }}>
+                {entry.amount}{entry.unitStr} {entry.name}
+              </div>
+              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: C.muted, marginTop: 4 }}>
+                <span style={{ color: C.accent }}>{entry.kcal} kcal</span> · <span style={{ color: C.danger }}>{entry.pro}p</span> · <span style={{ color: C.green }}>{entry.carb}c</span> · <span style={{ color: "#fb923c" }}>{entry.fat}f</span>
+              </div>
+            </div>
+            <button onClick={() => removeEntry(entry.entryId)} style={{ background: "transparent", border: "none", color: C.muted, fontSize: 20, cursor: "pointer" }} onMouseEnter={e => e.target.style.color = C.danger} onMouseLeave={e => e.target.style.color = C.muted}>×</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ══════════ WORKOUT LOGGER ═════════════════════════════════════════════════ */
 function WorkoutLogger({dayConfig,onBack,onSessionLogged,weightUnit}){
   const today=todayKey(),wk=weekKey();
