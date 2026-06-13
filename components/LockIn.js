@@ -80,6 +80,29 @@ const SPLIT_PRESETS = {
 const ALL_MUSCLES = ["chest","back","biceps","triceps","shoulders","legs","abs"];
 const MUSCLE_LABELS = {chest:"Chest",back:"Back",biceps:"Biceps",triceps:"Triceps",shoulders:"Shoulders",legs:"Legs",abs:"Abs"};
 
+const COMMON_FOODS = [
+  { id: "c1", name: "Chicken Breast (cooked)", kcal: 165, pro: 31, carb: 0, fat: 3.6, unit: "100g" },
+  { id: "c2", name: "White Rice (cooked)", kcal: 130, pro: 2.7, carb: 28, fat: 0.3, unit: "100g" },
+  { id: "c3", name: "Eggs (Large)", kcal: 72, pro: 6.3, carb: 0.4, fat: 4.8, unit: "1 egg" },
+  { id: "c4", name: "Oats (dry)", kcal: 389, pro: 16.9, carb: 66.3, fat: 6.9, unit: "100g" },
+  { id: "c5", name: "Banana", kcal: 89, pro: 1.1, carb: 22.8, fat: 0.3, unit: "1 medium" },
+  { id: "c6", name: "Almonds", kcal: 579, pro: 21.2, carb: 21.6, fat: 49.9, unit: "100g" },
+  { id: "c7", name: "Greek Yogurt (0%)", kcal: 59, pro: 10, carb: 3.6, fat: 0.4, unit: "100g" },
+  { id: "c8", name: "Beef Mince (5% fat)", kcal: 137, pro: 21.4, carb: 0, fat: 5, unit: "100g" },
+  { id: "c9", name: "Salmon (raw)", kcal: 208, pro: 20, carb: 0, fat: 13, unit: "100g" },
+  { id: "c10", name: "Olive Oil", kcal: 119, pro: 0, carb: 0, fat: 13.5, unit: "1 tbsp" },
+  { id: "c11", name: "Whole Milk", kcal: 61, pro: 3.2, carb: 4.8, fat: 3.3, unit: "100ml" },
+  { id: "c12", name: "Whey Protein", kcal: 110, pro: 25, carb: 2, fat: 0.5, unit: "1 scoop" },
+  { id: "c13", name: "Sweet Potato (raw)", kcal: 86, pro: 1.6, carb: 20.1, fat: 0.1, unit: "100g" },
+  { id: "c14", name: "Broccoli", kcal: 34, pro: 2.8, carb: 6.6, fat: 0.4, unit: "100g" },
+  { id: "c15", name: "Peanut Butter", kcal: 588, pro: 25, carb: 20, fat: 50, unit: "100g" },
+  { id: "c16", name: "Avocado", kcal: 160, pro: 2, carb: 8.5, fat: 14.7, unit: "100g" },
+  { id: "c17", name: "Apple", kcal: 52, pro: 0.3, carb: 13.8, fat: 0.2, unit: "1 medium" },
+  { id: "c18", name: "Pasta (dry)", kcal: 371, pro: 13, carb: 74, fat: 1.5, unit: "100g" },
+  { id: "c19", name: "Cottage Cheese (low fat)", kcal: 72, pro: 12.4, carb: 2.7, fat: 1, unit: "100g" },
+  { id: "c20", name: "Tuna (canned)", kcal: 86, pro: 19.4, carb: 0, fat: 1, unit: "100g" }
+];
+
 const ALL_HABITS = [
   {id:"pushups",   label:"Pushups",              cat:"FITNESS"},
   {id:"pullups",   label:"Pullups",              cat:"FITNESS"},
