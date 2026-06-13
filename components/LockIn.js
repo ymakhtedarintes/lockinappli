@@ -613,26 +613,39 @@ const handleSearch = async (e) => {
 
     setIsSearching(true);
     
-    // Uses your Vercel Environment Variable securely!
     const API_KEY = process.env.NEXT_PUBLIC_USDA_API_KEY || "DEMO_KEY"; 
     
-    const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${encodeURIComponent(searchQuery)}&pageSize=15&dataType=Foundation,SR%20Legacy`;
+    // REMOVED the strict dataType filter. It now searches Foundation, SR Legacy, AND Branded foods.
+    const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${encodeURIComponent(searchQuery)}&pageSize=20`;
 
     try {
       const response = await fetch(url);
+      
+      // Catch rate limits and errors so it doesn't just show a blank screen!
+      if (!response.ok) {
+        if (response.status === 429) {
+          alert("USDA Rate Limit hit! You need to add your real API key in Vercel.");
+        } else {
+          alert("USDA API Error. Try again.");
+        }
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
+
       const data = await response.json();
 
-      if (data.foods) {
+      if (data.foods && data.foods.length > 0) {
         const results = data.foods.map((food) => {
           const getNutrient = (id1, id2) => {
-            const nut = food.foodNutrients.find(n => n.nutrientId === id1 || n.nutrientId === id2);
+            const nut = food.foodNutrients?.find(n => n.nutrientId === id1 || n.nutrientId === id2);
             return nut ? Math.round(nut.value) : 0;
           };
 
-          // CORRECTED DATA MAPPING: perfectly matches your app's internal state
           return {
             id: food.fdcId,
-            name: food.description.charAt(0).toUpperCase() + food.description.slice(1).toLowerCase(),
+            // Adds brand owner if it exists, otherwise just the description
+            name: food.brandOwner ? `${food.description} (${food.brandOwner})` : food.description,
             kcal: getNutrient(1008, 208),
             pro: getNutrient(1003, 203),
             carb: getNutrient(1005, 205),
@@ -643,10 +656,12 @@ const handleSearch = async (e) => {
 
         setSearchResults(results);
       } else {
+        alert("No foods found for that search.");
         setSearchResults([]);
       }
     } catch (error) {
-      console.error("Error fetching from USDA:", error);
+      console.error("Fetch error:", error);
+      alert("Network error trying to search.");
       setSearchResults([]);
     } finally {
       setIsSearching(false);
