@@ -607,25 +607,50 @@ function NutritionPage() {
     await dbSet("nutrition:" + date, { log: newLog, goals });
   };
 
-  const searchOpenFoodFacts = async (e) => {
+const handleSearch = async (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
+
     setIsSearching(true);
+
+    const API_KEY = process.env.NEXT_PUBLIC_USDA_API_KEY || "DEMO_KEY";
+    
+    const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${encodeURIComponent(searchQuery)}&pageSize=15&dataType=Foundation,SR%20Legacy`;
+
     try {
-      const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(searchQuery)}&search_simple=1&action=process&json=1&page_size=20`);
-      const data = await res.json();
-      const parsed = data.products.map(p => ({
-        id: p.code,
-        name: (p.product_name || 'Unknown') + (p.brands ? ` (${p.brands})` : ''),
-        kcal: p.nutriments?.['energy-kcal_100g'] || 0,
-        pro: p.nutriments?.proteins_100g || 0,
-        carb: p.nutriments?.carbohydrates_100g || 0,
-        fat: p.nutriments?.fat_100g || 0,
-        unit: "100g"
-      })).filter(p => p.name !== 'Unknown' && p.kcal > 0);
-      setSearchResults(parsed);
-    } catch(err) { console.error(err); }
-    setIsSearching(false);
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.foods) {
+        const results = data.foods.map((food) => {
+          const getNutrient = (id1, id2) => {
+            const nut = food.foodNutrients.find(n => n.nutrientId === id1 || n.nutrientId === id2);
+            return nut ? Math.round(nut.value) : 0;
+          };
+
+          return {
+            id: food.fdcId,
+            // Format name to look a bit cleaner
+            name: food.description.charAt(0).toUpperCase() + food.description.slice(1).toLowerCase(),
+            calories: getNutrient(1008, 208),
+            protein: getNutrient(1003, 203),
+            carbs: getNutrient(1005, 205),
+            fat: getNutrient(1004, 204),
+            serving_size: 100, // USDA data is standardized per 100g
+            serving_unit: "g"
+          };
+        });
+
+        setSearchResults(results);
+      } else {
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error("Error fetching from USDA:", error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const addItemToLog = (item) => {
