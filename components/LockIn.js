@@ -7,10 +7,10 @@ import { dbGet, dbSet } from "../lib/db";
 import Auth from "./Auth";
 
 const C = {
-  bg:"#050b14", surface:"#0b1221", border:"#1a2436", borderHi:"#2a3b59",
-  accent:"#00f0ff", accentDim:"#008c99", accentGlow:"rgba(0,240,255,0.04)",
-  text:"#f8fafc", muted:"#64748b", faint:"#0f172a",
-  danger:"#fb7185", green:"#10b981",
+  bg: "var(--background)", surface: "var(--card)", border: "var(--border)", borderHi: "var(--border)",
+  accent: "var(--primary)", accentDim: "var(--primary)", accentGlow: "rgba(138, 99, 75, 0.1)",
+  text: "var(--foreground)", muted: "var(--muted-foreground)", faint: "var(--muted)",
+  danger: "var(--destructive)", green: "#10b981",
 };
 
 
